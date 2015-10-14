@@ -108,9 +108,9 @@ def test_tba():
             nambu=      True
             )
         )
-#    a.addapps('EB',EB(run=TBAEB))
-#    a.addapps('DOS',DOS(ne=400,delta=0.01,run=TBADOS))
+#    a.addapps('EB',EB(save_data=False,run=TBAEB))
+#    a.addapps('DOS',DOS(ne=400,delta=0.01,save_data=False,run=TBADOS))
     a.addapps('EB',EB(path=line_1d(nk=200),save_data=False,run=TBAEB))
-    a.addapps('DOS',DOS(BZ=line_1d(nk=10000),delta=0.01,ne=400,run=TBADOS))
+    a.addapps('DOS',DOS(BZ=line_1d(nk=10000),delta=0.01,ne=400,save_data=False,run=TBADOS))
 #    a.addapps('EB',EB(path=BaseSpace(mode='mu',mesh=linspace(-3,3,num=201)),run=TBAEB,save_data=False))
     a.runapps()
