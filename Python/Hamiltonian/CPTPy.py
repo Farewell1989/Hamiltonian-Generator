@@ -231,13 +231,13 @@ def test_cpt():
             filling=    0.5,
             mu=         U/2,
             basis=      BasisE(up=(m*n,m*n/2),down=(m*n,m*n/2)),
-#            basis=      BasisE((2*m*n,m*n)),
+            #basis=      BasisE((2*m*n,m*n)),
             nspin=      1,
             hopping=    [Hopping(t,neighbour=1)],
             hubbard=    [Hubbard([U])]
             )
     a.get_ready()
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
-#    a.addapps('DOS',DOS(BZ=square_bz(nk=100),emin=-5,emax=5,ne=400,delta=0.05,run=CPTDOS,plot=True,show=False))
+    #a.addapps('DOS',DOS(BZ=square_bz(nk=100),emin=-5,emax=5,ne=400,delta=0.05,run=CPTDOS,plot=True,show=False))
     a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=True,plot=True,show=True,run=CPTEB))
     a.runapps()

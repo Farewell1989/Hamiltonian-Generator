@@ -1,6 +1,7 @@
 from BasicClass.AppPackPy import *
 from BasicClass.QuadraticPy import *
 from BasicClass.HubbardPy import *
+from BasicClass.GeneratorPy import *
 from BasicClass.NamePy import *
 from BasicClass.BasisEPy import *
 from BasicClass.OperatorRepresentationPy import *
@@ -13,93 +14,51 @@ import os.path,sys
 class ONR(Engine):
     '''
     The class ONR provides the methods to get the sparse matrix representation on the occupation number basis of an electron system. Apart from those inherited from its parent class Engine, it has the following attributes:
-    1) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
-    2) name: the name of system;
-    3) lattice: the lattice of the system;
-    4) filling: the filling factor of the system;
-    5) mu: the chemical potential of the system;
-    6) basis: the occupation number basis of the system;
-    7) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no; 
-    8) hopping: the hopping terms of the system, which is an instance of QuadraticList;
-    9) onsite: the onsite terms of the system, which is an instance of QuadraticList;
-    10) pairing: the pairing terms of the system, which is an instance of QuadraticList;
-    11) hubbard: the Hubbard interaction terms of the system, which is an instance of HubbardList;
-    12) boundary: the boundary condition of the system, 'op' for open and 'pr' for periodic;
-    13) nambu: a flag to tag whether the system works in the nambu space;
-    14) table: the index-sequence table of the system;
-    15) operators: a dict containing different groups of operators for diverse tasks, e.g. entry 'h' includes "half" the operators of the Hamiltonian, entry 'gf' includes all the single-fermion operators each of which represents the index of the Green function, etc;
-    16) matrix: the sparse matrix representation of the system.
+    1) name: the name of system;
+    2) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
+    3) filling: the filling factor of the system;
+    4) mu: the chemical potential of the system;
+    5) basis: the occupation number basis of the system;
+    6) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no; 
+    7) generator: the operator generator;
+    8) operators: a dict containing different groups of operators for diverse tasks, e.g. entry 'h' includes "half" the operators of the Hamiltonian, entry 'sp' includes all the single-particle operators, etc;
+    9) matrix: the sparse matrix representation of the system.
     '''
 
-    def __init__(self,ensemble='c',name=None,lattice=None,filling=0.5,mu=0,basis=None,nspin=1,hopping=[],onsite=[],pairing=[],hubbard=[],boundary='op',nambu=False,**karg):
+    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,generator=None,**karg):
+        self.name=Name(prefix=name,suffix=self.__class__.__name__)
         self.ensemble=ensemble
-        self.name=Name(name)
-        self.lattice=lattice
         self.filling=filling
         self.mu=mu
+        if self.ensemble.lower()=='c':
+            self.name['filling']=self.filling
+        elif self.ensemble.lower()=='g':
+            self.name['mu']=self.mu
         self.basis=basis
         if basis.basis_type=='ES':
             self.nspin=nspin
         else:
             self.nspin=2
-        self.hopping=HoppingList(*hopping)
-        self.onsite=OnsiteList(*onsite)
-        self.pairing=PairingList(*pairing)
-        self.hubbard=HubbardList(*hubbard)
-        self.boundary=boundary
-        self.nambu=nambu
-        self.table=Table(self.lattice.indices(nambu=self.nambu))
+        self.generator=generator
+        if not self.generator is None:
+            self.name.update(self.generator.parameters['const'])
+            self.name.update(self.generator.parameters['alter'])
         self.operators={}
-
-    def get_ready(self):
-        self.set_name()
         self.set_operators()
 
-    def set_name(self):
-        self.name=Name(prefix=self.name.prefix,suffix=self.__class__.__name__)
-        if self.ensemble.lower()=='c':
-            self.name.append(self.filling)
-        elif self.ensemble.lower()=='g':
-            self.name.append(self.mu)
-        self.name.extend(self.hopping)
-        self.name.extend(self.onsite)
-        self.name.extend(self.pairing)
-        self.name.extend(self.hubbard)
-
     def set_operators(self):
-        self._set_operators_hamiltonian()
-        self._set_operators_greenfunction()
+        self.set_operators_hamiltonian()
+        self.set_operators_single_particle()
 
-    def _set_operators_hamiltonian(self):
-        nhp=len(self.hopping)
-        nst=len(self.onsite)
-        npr=len(self.pairing)
-        nhb=len(self.hubbard)
-        self.operators['h']=OperatorList()
-        for neighbour,bonds in enumerate(self.lattice.bonds):
-            for bond in bonds:
-                if self.bond_fit_boundary(bond):
-                    if neighbour==0:
-                        if nhb>0: self.operators['h'].extend(self.hubbard.operators(bond,self.table,half=True))
-                        if nst>0: self.operators['h'].extend(self.onsite.operators(bond,self.table,half=True))
-                    else:
-                        if nhp>0: self.operators['h'].extend(self.hopping.operators(bond,self.table,half=True))
-                        if npr>0: self.operators['h'].extend(self.pairing.operators(bond,self.table,half=True))
+    def set_operators_hamiltonian(self):
+        self.operators['h']=self.generator.operators
 
-    def _set_operators_greenfunction(self):
-        self.operators['gf']=OperatorList()
-        table=self.table if self.nspin==2 else subset(self.table,mask=lambda index: True if index.spin==0 else False)
+    def set_operators_single_particle(self):
+        self.operators['sp']=OperatorList()
+        table=self.generator.table if self.nspin==2 else subset(self.generator.table,mask=lambda index: True if index.spin==0 else False)
         for index,sequence in table.iteritems():
-            if isinstance(index,Index):self.operators['gf'].append(E_Linear(1,indices=[index],rcoords=[self.lattice.points[index.site].rcoord],icoords=[self.lattice.points[index.site].icoord],seqs=[sequence]))
-        self.operators['gf'].sort(key=lambda operator: operator.seqs[0])
-
-    def bond_fit_boundary(self,bond):
-        if self.boundary.lower()=='op':
-            return bond.is_intra_cell()
-        elif self.boundary.lower()=='pr':
-            return True
-        else:
-            raise ValueError("ONR bond_fit_boundary error: boundary type '"+self.boundary+"' is not supported.")
+            if isinstance(index,Index):self.operators['sp'].append(E_Linear(1,indices=[index],rcoords=[self.generator.lattice.points[index.site].rcoord],icoords=[self.generator.lattice.points[index.site].icoord],seqs=[sequence]))
+        self.operators['sp'].sort(key=lambda operator: operator.seqs[0])
 
     def set_matrix(self):
         self.matrix=csr_matrix((self.basis.nbasis,self.basis.nbasis),dtype=GP.S_dtype)
@@ -109,7 +68,7 @@ class ONR(Engine):
         self.matrix=transpose(self.matrix)
 
 def ONRGFC(engine,app):
-    nopt=len(engine.operators['gf'])
+    nopt=len(engine.operators['sp'])
     if os.path.isfile(engine.din+'/'+engine.name.full_name+'_coeff.dat'):
         with open(engine.din+'/'+engine.name.full_name+'_coeff.dat','rb') as fin:
             app.gse=fromfile(fin,count=1)
@@ -125,8 +84,8 @@ def ONRGFC(engine,app):
     for h in xrange(2):
         if h==0: print 'Electron part:'
         else: print 'Hole part:' 
-        for j,optb in enumerate(engine.operators['gf']):
-            for i,opta in enumerate(engine.operators['gf']):
+        for j,optb in enumerate(engine.operators['sp']):
+            for i,opta in enumerate(engine.operators['sp']):
                 if engine.basis.basis_type.lower()=='es' and engine.nspin==2 and optb.indices[0].spin!=opta.indices[0].spin : continue
                 mask=False
                 if j==i and j==0 : mask=True
@@ -188,7 +147,7 @@ def ONRGF(engine,app):
     nmatrix=engine.apps['GFC'].nstep
     gse=engine.apps['GFC'].gse
     coeff=engine.apps['GFC'].coeff
-    nopt=len(engine.operators['gf'])
+    nopt=len(engine.operators['sp'])
     app.gf[...]=0.0
     buff=zeros((3,nmatrix),dtype=complex128)
     b=zeros(nmatrix,dtype=complex128)
@@ -202,7 +161,7 @@ def ONRGF(engine,app):
                 app.gf[i,j]+=inner(coeff[i,j,h,0,:],solve_banded((1,1),buff,b,overwrite_ab=True,overwrite_b=True,check_finite=False))
 
 def ONRDOS(engine,app):
-    engine.addapps(app=GF((len(engine.operators['gf']),len(engine.operators['gf'])),run=ONRGF))
+    engine.addapps(app=GF((len(engine.operators['sp']),len(engine.operators['sp'])),run=ONRGF))
     result=zeros((app.ne,2))
     for i,omega in enumerate(linspace(app.emin,app.emax,num=app.ne)):
         engine.apps['GF'].omega=omega+engine.mu+app.delta*1j
@@ -230,20 +189,21 @@ def test_onr():
     a=ONR(
             din=        'Results/Coeff',
             dout=       'Results',
-            ensemble=   'c',
             name=       'WG'+str(m)+str(n),
-            lattice=    Lattice(name='WG'+str(m)+str(n),points=[p1],translations=[(a1,m),(a2,n)]),
+            ensemble=   'c',
             filling=    0.5,
             mu=         U/2,
             basis=      BasisE(up=(m*n,m*n/2),down=(m*n,m*n/2)),
-#            basis=      BasisE((2*m*n,m*n)),
+            #basis=      BasisE((2*m*n,m*n)),
             nspin=      2,
-            hopping=    [Hopping(t,neighbour=1)],
-            hubbard=    [Hubbard([U])],
-            boundary=   'op'
+            generator=  Generator(
+                lattice=    Lattice(name='WG'+str(m)+str(n),points=[p1],translations=[(a1,m),(a2,n)]),
+                terms=[     Hopping('t',t,neighbour=1),
+                            Hubbard('U',[U])
+                            ]
             )
-    a.get_ready()
-    print a.operators['gf']
+        )
+    print a.operators['sp']
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
-    a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,delta=0.05,run=ONRDOS,show=False))
+    a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,delta=0.05,save_data=False,run=ONRDOS,show=True))
     a.runapps()

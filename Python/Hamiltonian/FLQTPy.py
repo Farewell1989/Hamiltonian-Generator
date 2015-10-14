@@ -60,7 +60,7 @@ def test_flqt():
         name=       name,
         generator=  Generator(
             lattice=    Lattice(name=name,points=[p1],translations=[(a1,N)]),
-#            lattice=    Lattice(name=name,points=[p1],vectors=[a1]),
+            #lattice=    Lattice(name=name,points=[p1],vectors=[a1]),
             parameters= {'mu1':mu1,'mu2':mu2},
             terms=[     Hopping('t1',-1.0),
                         Onsite('mu',0.0,modulate=lambda **karg: mu1 if karg['t']<1 else mu2),
@@ -69,6 +69,6 @@ def test_flqt():
             nambu=True
             )
         )
-#    a.addapps('EB',EB(path=BaseSpace('t',array([0,1])),save_data=False,run=TBAEB))
+    #a.addapps('EB',EB(path=BaseSpace('t',array([0,1])),save_data=False,run=TBAEB))
     a.addapps('EB',EB(ts=TSpace(array([0,1,2])),save_data=False,run=FLQTEB))
     a.runapps()
