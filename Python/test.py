@@ -67,6 +67,9 @@ for arg in sys.argv:
     if arg in ('cpt','all'):
         from Hamiltonian.CPTPy import *
         test_cpt()
+    if arg in ('vca','all'):
+        from Hamiltonian.VCAPy import *
+        test_vca()
     if arg in ('model.s_wave','model'):
         from Model.S_wave import *
         S_wave()

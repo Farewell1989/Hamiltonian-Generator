@@ -4,17 +4,26 @@ class CPT(ONR):
     '''
     '''
     def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,cell=None,generator=None,**karg):
+        self.name=Name(prefix=name,suffix=self.__class__.__name__)
+        self.ensemble=ensemble
+        self.filling=filling
+        self.mu=mu
+        if self.ensemble.lower()=='c':
+            self.name['filling']=self.filling
+        elif self.ensemble.lower()=='g':
+            self.name['mu']=self.mu
+        self.basis=basis
+        if basis.basis_type=='ES':
+            self.nspin=nspin
+        else:
+            self.nspin=2
+        self.generator=generator
+        self.name.update(self.generator.parameters['const'])
+        self.name.update(self.generator.parameters['alter'])
         self.cell=cell
         self.ctable=Table(self.cell.indices(nambu=generator.nambu))
-        super(CPT,self).__init__(
-            name=       name,
-            ensemble=   ensemble,
-            filling=    filling,
-            mu=         mu,
-            basis=      basis,
-            nspin=      nspin,
-            generator=  generator
-            )
+        self.operators={}
+        self.set_operators()
         self.clmap=[]
         self.set_clmap()
         self.cache={}
@@ -173,7 +182,7 @@ def CPTEB(engine,app):
     if app.plot:
         krange=array(xrange(app.path.rank))
         plt.title(engine.name.full_name+'_EB')
-        plt.pcolor(tensordot(krange,ones(app.ne),axes=0),tensordot(ones(app.path.rank),erange,axes=0),result)
+        plt.colorbar(plt.pcolormesh(tensordot(krange,ones(app.ne),axes=0),tensordot(ones(app.path.rank),erange,axes=0),result))
         if app.show:
             plt.show()
         else:
@@ -229,6 +238,6 @@ def test_cpt():
                 )
             )
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
-    a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=CPTDOS,plot=True,show=False))
+#    a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=CPTDOS,plot=True,show=False))
     a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=False,plot=True,show=True,run=CPTEB))
     a.runapps()

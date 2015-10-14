@@ -40,9 +40,8 @@ class ONR(Engine):
         else:
             self.nspin=2
         self.generator=generator
-        if not self.generator is None:
-            self.name.update(self.generator.parameters['const'])
-            self.name.update(self.generator.parameters['alter'])
+        self.name.update(self.generator.parameters['const'])
+        self.name.update(self.generator.parameters['alter'])
         self.operators={}
         self.set_operators()
 
