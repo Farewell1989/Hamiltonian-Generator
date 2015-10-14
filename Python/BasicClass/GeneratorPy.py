@@ -11,10 +11,9 @@ class Generator:
     4) nambu: a flag to tell whether the nambu space takes part;
     5) table: the index-sequence table of the system;
     6) half: a flag to tell whether the generated operators contains its hermitian conjugate part;
-    7) boundary: a function to specify the boundary conditions to control the generation of operators;
-    8) cache: the working cache used to handle the generation and update of the operators.
+    7) cache: the working cache used to handle the generation and update of the operators.
     '''
-    def __init__(self,lattice,parameters=None,terms=None,nambu=False,half=True,boundary=None):
+    def __init__(self,lattice,parameters=None,terms=None,nambu=False,half=True):
         self.lattice=lattice
         self.parameters={}
         self.terms={}
@@ -22,7 +21,6 @@ class Generator:
         self.nambu=nambu
         self.table=Table(self.lattice.indices(nambu=self.nambu))
         self.half=half
-        self.boundary=boundary
         self.cache={}
         self.set_cache()
 
@@ -51,17 +49,15 @@ class Generator:
             self.cache['const']=OperatorList()
             for bonds in self.lattice.bonds:
                 for bond in bonds:
-                    if self.boundary is None or self.boundary(bond):
-                        for terms in self.terms['const'].itervalues():
-                            self.cache['const'].extend(terms.operators(bond,self.table,half=self.half))
+                    for terms in self.terms['const'].itervalues():
+                        self.cache['const'].extend(terms.operators(bond,self.table,half=self.half))
         if 'alter' in self.terms:
             self.cache['alter']={}
             for key in self.terms['alter'].iterkeys():
                 self.cache['alter'][key]=OperatorList()
                 for bonds in self.lattice.bonds:
-                    if self.boundary is None or self.boundary(bond):
-                        for bond in bonds:
-                            self.cache['alter'][key].extend(self.terms['alter'][key].operators(bond,self.table,half=self.half))
+                    for bond in bonds:
+                        self.cache['alter'][key].extend(self.terms['alter'][key].operators(bond,self.table,half=self.half))
 
     def __str__(self):
         result='Parameters:\n'
@@ -98,6 +94,5 @@ class Generator:
                 if mask:
                     self.cache['alter'][key]=OperatorList()
                     for bonds in self.lattice.bonds:
-                        if self.boundary is None or self.boundary(bond):
-                            for bond in bonds:
-                                self.cache['alter'][key].extend(self.terms['alter'][key].operators(bond,self.table,half=self.half))
+                        for bond in bonds:
+                            self.cache['alter'][key].extend(self.terms['alter'][key].operators(bond,self.table,half=self.half))
