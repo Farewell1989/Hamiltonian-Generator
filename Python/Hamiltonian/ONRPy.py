@@ -203,7 +203,6 @@ def test_onr():
                             ]
             )
         )
-    print a.operators['sp']
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
-    a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,delta=0.05,save_data=False,run=ONRDOS,show=True))
+    a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,delta=0.05,save_data=False,run=ONRDOS,show=False))
     a.runapps()

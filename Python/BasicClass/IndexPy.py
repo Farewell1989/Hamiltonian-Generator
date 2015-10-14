@@ -9,7 +9,7 @@ class Index:
     1) site: site index, start with 0, default value 0;
     2) orbital: orbital index, start with 0, default value 0; 
     3) spin: spin index, start with 0, default value 0;
-    4) nambu: '0' for CREATION and '1' for ANNIHILATION, default value ANNIHILATION.
+    4) nambu: '0' for ANNIHILATION and '1' for CREATION, default value ANNIHILATION.
     5) scope: the scope of the index within which it is defined, default value None.
     '''
     
