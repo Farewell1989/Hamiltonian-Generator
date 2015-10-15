@@ -64,9 +64,6 @@ for arg in sys.argv:
     if arg in ('onr','all'):
         from Hamiltonian.ONRPy import *
         test_onr()
-    if arg in ('cpt','all'):
-        from Hamiltonian.CPTPy import *
-        test_cpt()
     if arg in ('vca','all'):
         from Hamiltonian.VCAPy import *
         test_vca()
