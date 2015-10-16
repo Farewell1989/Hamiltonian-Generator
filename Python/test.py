@@ -70,3 +70,8 @@ for arg in sys.argv:
     if arg in ('model.s_wave','model'):
         from Model.S_wave import *
         S_wave()
+    if arg in ('model.hexagon','model'):
+        from Model.Hexagon import *
+        Hexagon()
+    if arg in ('project.tkh'):
+        from Project.TKH.Run import *

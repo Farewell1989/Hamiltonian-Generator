@@ -56,7 +56,6 @@ def test_flqt():
     p1=Point(site=0,rcoord=[0.0],icoord=[0.0],norbital=1,nspin=1,nnambu=2,scope=name)
     a1=array([1.0])
     a=FLQT(
-        dout=       'Results',
         name=       name,
         generator=  Generator(
             lattice=    Lattice(name=name,points=[p1],translations=[(a1,N)]),

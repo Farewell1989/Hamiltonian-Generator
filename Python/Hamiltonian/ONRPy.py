@@ -186,8 +186,6 @@ def test_onr():
     a1=array([1.0,0.0])
     a2=array([0.0,1.0])
     a=ONR(
-            din=        'Results/Coeff',
-            dout=       'Results',
             name=       'WG'+str(m)+str(n),
             ensemble=   'c',
             filling=    0.5,

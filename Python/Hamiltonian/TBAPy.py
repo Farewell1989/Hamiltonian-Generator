@@ -95,7 +95,6 @@ def test_tba():
     p2=Point(site=1,rcoord=[0.5],icoord=[0.0],norbital=1,nspin=1,nnambu=2,scope='WG')
     a1=array([1.0])
     a=TBA(
-        dout=       'Results',
         name=       'WG',
         generator=  Generator(
             #lattice=    Lattice(name='WG',points=[p1,p2],translations=[(a1,20)]),
