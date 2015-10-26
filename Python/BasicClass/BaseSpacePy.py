@@ -145,7 +145,7 @@ def hexagon_gkm(reciprocals=None,nk=100,vh='H'):
     result=KSpace(nk=nk)
     if not reciprocals is None:
         b1=reciprocals[0]
-        b2=reciprocals[1
+        b2=reciprocals[1]
         buff=inner(b1,b2)/norm(b1)/norm(b2)
         if abs(buff+0.5)<RZERO:
             b2=-b2
