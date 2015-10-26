@@ -179,10 +179,10 @@ def reciprocals(vectors):
         else:
             buff[0:ndim,2]=vectors[2]
         buff=inv(buff)
-        result.append(array(buff[0:ndim,0]*2*pi))
-        result.append(array(buff[0:ndim,1]*2*pi))
+        result.append(array(buff[0,0:ndim]*2*pi))
+        result.append(array(buff[1,0:ndim]*2*pi))
         if nvectors==3:
-            result.append(array(buff[0:ndim,2]*2*pi))
+            result.append(array(buff[2,0:ndim]*2*pi))
     else:
         raise ValueError('Reciprocals error: the number of translation vectors should not be greater than 3.')
     return result

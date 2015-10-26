@@ -18,6 +18,7 @@ a2=array([3.0,sqrt(3.0)])
 b1=array([1.0,0.0])
 b2=array([0.5,sqrt(3.0)/2])
 l12=Lattice(name=name,points=points,vectors=[a1,a2])
+l12_open=Lattice(name=name,points=points)
 cell=Lattice(name=name,points=[points[0]],vectors=[b1,b2])
 
 def kitaev_hopping(bond):
@@ -26,7 +27,7 @@ def kitaev_hopping(bond):
     if abs(theta-60)<RZERO or abs(theta-240)<RZERO: return sigmay('sp')
     if abs(theta-120)<RZERO or abs(theta-300)<RZERO: return sigmaz('sp')
 
-t1,t2,U=0.0,-1.0,8.0
+t1,t2,U=0.0,-1.0,9.0
 TKH=ONR(
     name=       name,
     ensemble=   'c',
@@ -34,7 +35,7 @@ TKH=ONR(
     mu=         U/2,
     basis=      BasisE((24,12)),
     generator=  Generator(
-        lattice=    l12,
+        lattice=    l12_open,
         terms=[     Hopping('t1',t1),
                     Hopping('t2',t2,indexpackages=kitaev_hopping),
                     Hubbard('U',[U])

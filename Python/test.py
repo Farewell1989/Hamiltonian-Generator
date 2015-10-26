@@ -72,6 +72,7 @@ for arg in sys.argv:
         S_wave()
     if arg in ('model.hexagon','model'):
         from Model.Hexagon import *
-        Hexagon()
+        #Hexagon_VCA()
+        Hexagon_TBA()
     if arg in ('project.tkh'):
         from Project.TKH.Run import *

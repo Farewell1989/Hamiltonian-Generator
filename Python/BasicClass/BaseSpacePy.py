@@ -145,10 +145,11 @@ def hexagon_gkm(reciprocals=None,nk=100,vh='H'):
     result=KSpace(nk=nk)
     if not reciprocals is None:
         b1=reciprocals[0]
-        b2=reciprocals[1]
-        if abs(inner(b1,b2)+0.5)<RZERO:
+        b2=reciprocals[1
+        buff=inner(b1,b2)/norm(b1)/norm(b2)
+        if abs(buff+0.5)<RZERO:
             b2=-b2
-        elif abs(inner(b1,b2)-0.5)>RZERO:
+        elif abs(buff-0.5)>RZERO:
             raise ValueError("Hexagon_gkm error: the reciprocals are too wired.")
     else:
         if vh in ('H','h'):
@@ -173,9 +174,10 @@ def hexagon_bz(reciprocals=None,nk=100,vh='H'):
     if not reciprocals is None:
         b1=reciprocals[0]
         b2=reciprocals[1]
-        if abs(inner(b1,b2)+0.5)<RZERO:
+        buff=inner(b1,b2)/norm(b1)/norm(b2)
+        if abs(buff+0.5)<RZERO:
             b2=-b2
-        elif abs(inner(b1,b2)-0.5)>RZERO:
+        elif abs(buff-0.5)>RZERO:
             raise ValueError("Hexagon_gkm error: the reciprocals are too wired.")
     else:
         if vh in ('H','h'):
