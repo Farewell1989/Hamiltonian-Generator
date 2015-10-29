@@ -122,19 +122,13 @@ class VCA(ONR):
                         result[i,j]+=buff[row,col]*exp(1j*inner(ks,optl.rcoords[0]-optk.rcoords[0]))
         return result/(ngf/ngf_vca)
 
-#    def cl_mesh(self,kmesh):
-#        if 'cl_mesh' in self.cache:
-#            return self.cache['cl_mesh']
-#        else:
-#            nmesh=max([len(opts) for opts in self.clmap])
-#            result=zeros((kmesh.shape[0],nmesh,nmesh),dtype=complex128)
-            
     def gf_vca_kmesh(self,omega,kmesh):
-        import pdb
         ngf=len(self.operators['sp'])
         gf=self.gf(omega)
         buff=einsum('jk,ikl->ijl',gf,inv(identity(ngf,dtype=complex128)-dot(self.pt_mesh(kmesh),gf)))
         ngf_vca=len(self.operators['csp'])
+        nclmap=len(self.clmap[0])
+        seqs,coords=self.clmap_unpacked()
         result=zeros((kmesh.shape[0],ngf_vca,ngf_vca),dtype=complex128)
         for n,ks in enumerate(kmesh):
             for i in xrange(ngf_vca):
@@ -144,7 +138,30 @@ class VCA(ONR):
                         for l,optl in enumerate(self.clmap[j]):
                             col=optl.seqs[0]
                             result[n,i,j]+=buff[n,row,col]*exp(1j*inner(ks,optl.rcoords[0]-optk.rcoords[0]))
+#            result[n,:,:]=gf_contract(ngf_vca,nclmap,buff[n,:,:],ks,seqs,coords)
         return result/(ngf/ngf_vca)
+
+    def clmap_unpacked(self):
+        if 'clmap_seqs' in self.cache and 'clmap_coords' in self.cache:
+            return self.cache['clmap_seqs'],self.cache['clmap_coords']
+        else:
+            ncsp,nclmap,ndim=len(self.operators['csp']),len(self.clmap[0]),len(self.operators['csp'][0].rcoords[0])
+            seqs,coords=zeros((ncsp,nclmap),dtype=int64),zeros((ncsp,nclmap,ndim),dtype=complex128)
+            for i in xrange(ncsp):
+                for j,optj in enumerate(self.clmap[i]):
+                    seqs[i,j],coords[i,j,:]=optj.seqs[0],optj.rcoords[0]
+            self.cache['clmap_seqs'],self.cache['clmap_coords']=seqs,coords
+            return seqs,coords
+
+@jit
+def gf_contract(ngf_vca,nclmap,buff,ks,seqs,coords):
+    result=zeros((ngf_vca,ngf_vca),dtype=complex128)
+    for i in xrange(ngf_vca):
+        for k in xrange(nclmap):
+            for j in xrange(ngf_vca):
+                for l in xrange(nclmap):
+                    result+=buff[seqs[i,k],seqs[j,l]]*exp(1j*inner(ks,coords[j,l,:]-coords[i,k,:]))
+    return result
 
 def has_integer_solution(coords,vectors):
     nvectors=len(vectors)
@@ -247,6 +264,6 @@ def test_vca():
                 )
             )
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
-    #a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=False))
+    #a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
     a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
     a.runapps()
