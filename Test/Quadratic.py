@@ -1,0 +1,28 @@
+from BasicClass.QuadraticPy import *
+from BasicClass.LatticePy import *
+def test_quadratic():
+    p1=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=2,nspin=2,nnambu=2,scope="WG")
+    p2=Point(site=1,rcoord=[1.0,0.0],icoord=[0.0,0.0],atom=1,norbital=2,nspin=2,nnambu=2,scope="WG")
+    bond=Bond(neighbour=1,spoint=p1,epoint=p2)
+    a=QuadraticList(Hopping('t1',1.0,neighbour=1,indexpackages=sigmaz("SP")),Hopping('t2',1,neighbour=1,indexpackages=sigmax("SL")*sigmax("SP")))
+    print a.mesh(bond,False)
+    b=QuadraticList(Onsite('mu1',1.0,neighbour=1,indexpackages=sigmaz("SP")),Onsite('mu2',1,neighbour=1,indexpackages=sigmaz("SP")*sigmay("OB")))
+    print b.mesh(bond,False)
+    c=QuadraticList(Pairing('delta1',1.0,neighbour=1,indexpackages=sigmaz("SP")),Pairing('delta2',1,neighbour=1,indexpackages=sigmaz("SP")+sigmay("OB")))
+    print c.mesh(bond,False)
+
+def test_quadratic_operators():
+    p1=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=1,nspin=2,nnambu=2,scope="WG")
+    p2=Point(site=1,rcoord=[1.0,0.0],icoord=[0.0,0.0],atom=1,norbital=1,nspin=2,nnambu=2,scope="WG")
+    l=Lattice(name="WG",points=[p1,p2])
+    table=Table(l.indices(nambu=True))
+    a=QuadraticList(Hopping('t1',1.0,neighbour=1,indexpackages=sigmaz("SP")))
+    b=QuadraticList(Onsite('mu',1.0,neighbour=0,indexpackages=sigmaz("SP")))
+    c=QuadraticList(Pairing('delta',1.0,neighbour=1,indexpackages=sigmaz("SP"),modulate=lambda **karg: 1))
+    d=a+b+c
+    opts=OperatorList()
+    for bonds in l.bonds:
+        for bond in bonds:
+            opts.extend(d.operators(bond,table,False))
+    print opts
+    print d

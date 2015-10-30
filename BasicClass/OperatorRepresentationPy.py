@@ -93,7 +93,6 @@ def opt_rep_2(operator,basis,transpose):
         opt_rep_2_00(data,indices,indptr,nbasis,basis_table,seq1,seq2)
     else:
         opt_rep_2_11(data,indices,indptr,nbasis,basis_table,seq1,seq2)
-#    print data,indices,indptr,ndata
     if transpose==False:
         return csr_matrix((data*operator.value,indices,indptr),shape=(nbasis,nbasis))
     else:
@@ -222,33 +221,3 @@ def opt_rep_4_1100(data,indices,indptr,nbasis,basis_table,seq1,seq2,seq3,seq4):
                         data[ndata]=(-1)**nsign
                         ndata+=1
     indptr[nbasis]=ndata
-
-# The following codes are used for tests only.
-from QuadraticPy import *
-def test_opt_rep():
-    m=6;n=2;nloop=500
-    p=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=1,nspin=2,nnambu=2,scope="WG")
-    a1=array([1.0,0.0]);a2=array([0.0,1.0])
-    l=Lattice(name="WG",points=[p],translations=((a1,m),(a2,n)))
-    l.plot(show='y')
-    table=Table(l.indices(nambu=True))
-    a=QuadraticList(Hopping('t',1.0,neighbour=1,indexpackages=sigmaz("SP")))
-    b=QuadraticList(Onsite('mu',1.0,neighbour=0,indexpackages=sigmaz("SP")))
-    c=QuadraticList(Pairing('delta',1.0,neighbour=1,indexpackages=sigmaz("SP")))
-    opts=OperatorList()
-    for bonds in l.bonds:
-        for bond in bonds:
-            opts.extend(a.operators(bond,table))
-            opts.extend(b.operators(bond,table))
-            opts.extend(c.operators(bond,table))
-    print opts
-    basis=BasisE(nstate=2*m*n)
-#    basis=BasisE((2*m*n,m*n))
-#    basis=BasisE(up=(m*n,m*n/2),down=(m*n,m*n/2))
-#    print basis
-    stime=time.time()
-    for i in xrange(nloop):
-        opt_rep(opts[0],basis,transpose=False)
-#        print opt_rep(opts[0],basis,transpose=False)
-    etime=time.time()
-    print etime-stime
