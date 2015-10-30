@@ -1,7 +1,6 @@
 from BasicGeometryPy import *
 from numpy.linalg import inv
 import matplotlib.pyplot as plt
-import time
 class BaseSpace:
     '''
     The BaseSpace class provides a unified description of all kinds of parameter spaces. It has the following attributes:

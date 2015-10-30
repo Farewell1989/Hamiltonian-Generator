@@ -27,7 +27,7 @@ class TBA(Engine):
     def matrix(self,k=[],**karg):
         self.generator.update(**karg)
         nmatrix=len(self.generator.table)
-        result=zeros((nmatrix,nmatrix),dtype=GP.Q_dtype)
+        result=zeros((nmatrix,nmatrix),dtype=complex128)
         for opt in self.generator.operators:
             phase=1 if len(k)==0 else exp(-1j*inner(k,opt.rcoords[0]))
             result[opt.seqs]+=opt.value*phase

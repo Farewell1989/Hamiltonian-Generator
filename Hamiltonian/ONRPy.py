@@ -60,7 +60,7 @@ class ONR(Engine):
         self.operators['sp'].sort(key=lambda operator: operator.seqs[0])
 
     def set_matrix(self):
-        self.matrix=csr_matrix((self.basis.nbasis,self.basis.nbasis),dtype=GP.S_dtype)
+        self.matrix=csr_matrix((self.basis.nbasis,self.basis.nbasis),dtype=complex128)
         for operator in self.operators['h']:
             self.matrix+=opt_rep(operator,self.basis,transpose=False)
         self.matrix+=conjugate(transpose(self.matrix))
@@ -71,11 +71,11 @@ def ONRGFC(engine,app):
     if os.path.isfile(engine.din+'/'+engine.name.full_name+'_coeff.dat'):
         with open(engine.din+'/'+engine.name.full_name+'_coeff.dat','rb') as fin:
             app.gse=fromfile(fin,count=1)
-            app.coeff=fromfile(fin,dtype=GP.S_dtype)
+            app.coeff=fromfile(fin,dtype=complex128)
         if len(app.coeff)==nopt*nopt*2*3*app.nstep:
             app.coeff=app.coeff.reshape((nopt,nopt,2,3,app.nstep))
             return
-    app.coeff=zeros((nopt,nopt,2,3,app.nstep),dtype=GP.S_dtype)
+    app.coeff=zeros((nopt,nopt,2,3,app.nstep),dtype=complex128)
     engine.set_matrix()
     app.gse,gs=Lanczos(engine.matrix,vtype=app.vtype).eig(job='v')
     print 'gse:',app.gse
@@ -125,7 +125,7 @@ def onr_eh(self,index):
             result.basis=BasisE((self.basis.nstate,self.basis.nparticle+1))
         else:
             result.basis=BasisE((self.basis.nstate,self.basis.nparticle-1))
-        result.matrix=csr_matrix((result.basis.nbasis,result.basis.nbasis),dtype=GP.S_dtype)
+        result.matrix=csr_matrix((result.basis.nbasis,result.basis.nbasis),dtype=complex128)
         result.set_matrix()
         return result
     else:
@@ -138,7 +138,7 @@ def onr_eh(self,index):
             result.basis=BasisE(up=(self.basis.nstate[0],self.basis.nparticle[0]+1),down=(self.basis.nstate[1],self.basis.nparticle[1]))
         else:
             result.basis=BasisE(up=(self.basis.nstate[0],self.basis.nparticle[0]-1),down=(self.basis.nstate[1],self.basis.nparticle[1]))
-        result.matrix=csr_matrix((result.basis.nbasis,result.basis.nbasis),dtype=GP.S_dtype)
+        result.matrix=csr_matrix((result.basis.nbasis,result.basis.nbasis),dtype=complex128)
         result.set_matrix()
         return result
 

@@ -1,6 +1,6 @@
 from numpy import *
 from numpy.linalg import norm
-from GlobalPy import RZERO
+from ConstantPy import RZERO
 
 def azimuthd(self):
     '''

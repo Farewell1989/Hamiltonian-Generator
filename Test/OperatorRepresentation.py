@@ -1,5 +1,6 @@
 from BasicClass.OperatorRepresentationPy import *
 from BasicClass.QuadraticPy import *
+from BasicClass.LatticePy import *
 import time
 def test_opt_rep():
     m=2;n=2;nloop=500

@@ -1,9 +1,8 @@
 from OperatorPy import *
 from BasisEPy import *
 from scipy.sparse import *
-import GlobalPy as GP
 from numba import jit
-def opt_rep(operator,basis,transpose=False):
+def opt_rep(operator,basis,transpose=False,dtype=complex128):
     '''
     The opt_rep function returns the sparse matrix representation of an operator on the occupation number basis. Three kinds of operators are supported:
     1) The single particle operators. Since a single creation or annihilation operator changes the number of particles, the quantum state usually lives in a different Hilbert space after the operator's operation on it. Therefore in this case, the parameter basis is a list of two instances of BasisE. 
@@ -14,23 +13,23 @@ def opt_rep(operator,basis,transpose=False):
     '''
     if operator.rank==1:
         if len(basis)==2:
-            return opt_rep_1(operator,basis[0],basis[1],transpose)
+            return opt_rep_1(operator,basis[0],basis[1],transpose,dtype=dtype)
         else:
             raise ValueError("Opt_rep error: when the operator's rank is 1 there must be two groups of basis.")
     elif operator.rank==2:
-        return opt_rep_2(operator,basis,transpose)
+        return opt_rep_2(operator,basis,transpose,dtype=dtype)
     elif operator.rank==4:
         if operator.is_normal_ordered():
-            return opt_rep_4(operator,basis,transpose)
+            return opt_rep_4(operator,basis,transpose,dtype=dtype)
         else:
             raise ValueError("Opt_rep error: when the operator's rank is 4, it must be normal ordered.")
     else:
         raise ValueError("Opt_rep error: only operators with rank=1,2,4 are supported.")
 
-def opt_rep_1(operator,basis1,basis2,transpose):
+def opt_rep_1(operator,basis1,basis2,transpose,dtype=complex128):
     nbasis1=basis1.nbasis
     nbasis2=basis2.nbasis
-    data=zeros(nbasis1,dtype=GP.S_dtype)
+    data=zeros(nbasis1,dtype=dtype)
     indices=zeros(nbasis1,dtype=int32)
     indptr=zeros(nbasis1+1,dtype=int32)
     seq=operator.seqs[0]
@@ -77,9 +76,9 @@ def opt_rep_1_0(data,indices,indptr,nbasis1,nbasis2,basis_table1,basis_table2,se
             ndata+=1
     indptr[nbasis1]=ndata
 
-def opt_rep_2(operator,basis,transpose):
+def opt_rep_2(operator,basis,transpose,dtype=complex128):
     nbasis=basis.nbasis
-    data=zeros(nbasis,dtype=GP.S_dtype)
+    data=zeros(nbasis,dtype=dtype)
     indices=zeros(nbasis,dtype=int32)
     indptr=zeros(nbasis+1,dtype=int32)
     seq1=operator.seqs[0]
@@ -178,9 +177,9 @@ def opt_rep_2_11(data,indices,indptr,nbasis,basis_table,seq1,seq2):
                 ndata+=1
     indptr[nbasis]=ndata
 
-def opt_rep_4(operator,basis,transpose):
+def opt_rep_4(operator,basis,transpose,dtype=complex128):
     nbasis=basis.nbasis
-    data=zeros(nbasis,dtype=GP.S_dtype)
+    data=zeros(nbasis,dtype=dtype)
     indices=zeros(nbasis,dtype=int32)
     indptr=zeros(nbasis+1,dtype=int32)
     seq1=operator.seqs[0]

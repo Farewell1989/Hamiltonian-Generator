@@ -2,7 +2,6 @@ from numpy import *
 from scipy.sparse import csr_matrix
 from scipy.linalg import eigh
 from numpy.linalg import norm
-from GlobalPy import RZERO,S_dtype
 class Lanczos:
     '''
     The Lanczos class provides the following methods to deal with sparse Hermitian matrices:
@@ -11,14 +10,15 @@ class Lanczos:
     3) tridiagnoal: returns the tridiagnoal matrix representation of the original sparse Hermitian matrix.
     4) eig: returns the ground state energy and optionally the ground state of the sparse Hermitian matrix.
     '''
-    def __init__(self,matrix,vector=[],vtype='rd'):
+    def __init__(self,matrix,vector=[],vtype='rd',zero=10**-10,dtype=complex128):
         self.matrix=matrix
+        self.zero=zero
         if len(vector)==0:
             if vtype.lower()=='rd':
-                self.new=zeros(matrix.shape[0],dtype=S_dtype)
+                self.new=zeros(matrix.shape[0],dtype=dtype)
                 self.new[:]=random.rand(matrix.shape[0])
             else:
-                self.new=ones(matrix.shape[0],dtype=S_dtype)
+                self.new=ones(matrix.shape[0],dtype=dtype)
             self.new[:]=self.new[:]/norm(self.new)
         else:
             self.new=vector
@@ -36,7 +36,7 @@ class Lanczos:
         else:
             buff[:]=buff[:]-self.a[count]*self.new
         nbuff=norm(buff)
-        if nbuff>RZERO:
+        if nbuff>self.zero:
             self.b.append(nbuff)
             self.old[:]=self.new[:]
             self.new[:]=buff[:]/nbuff

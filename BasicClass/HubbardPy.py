@@ -3,7 +3,6 @@ from OperatorPy import *
 from TermPy import *
 from BondPy import *
 from TablePy import *
-import GlobalPy as GP
 class Hubbard(Term):
     '''
     Class Hubbard provides a complete description of single orbital and multi orbital Hubbard interactions.
@@ -43,12 +42,12 @@ class Hubbard(Term):
         result=HubbardList(deepcopy(self))
         return result
 
-    def mesh(self,bond):
+    def mesh(self,bond,dtype=float64):
         '''
         Generate the mesh of Hubbard terms.
         '''
         ndim=bond.epoint.norbital*bond.epoint.nspin
-        result=zeros((ndim,ndim,ndim,ndim),dtype=GP.H_dtype)
+        result=zeros((ndim,ndim,ndim,ndim),dtype=dtype)
         if hasattr(self,'atom'):
             atom=self.atom
         else:
@@ -129,28 +128,28 @@ class HubbardList(list):
             raise ValueError('HubbardList "+" error: the other parameter must be an instance of Hubbard or HubbardList')
         return result
 
-    def mesh(self,bond):
+    def mesh(self,bond,dtype=float64):
         '''
         Generate the mesh of all Hubbard terms defined on a bond.
         '''
         if bond.epoint.nspin==2 and bond.spoint.nspin==2:
             ndim=bond.epoint.norbital*bond.epoint.nspin
-            result=zeros((ndim,ndim,ndim,ndim),dtype=GP.H_dtype)
+            result=zeros((ndim,ndim,ndim,ndim),dtype=dtype)
             if bond.neighbour==0:
                 for obj in self:
-                    result+=obj.mesh(bond)
+                    result+=obj.mesh(bond,dtype=dtype)
             return result
         else:
             raise ValueError('HubbardList mesh error: the input bond must be onsite ones nspin=2.')
 
-    def operators(self,bond,table,half=True):
+    def operators(self,bond,table,half=True,dtype=float64):
         '''
         Generate the set of non-zero operators defined on the input bond.
         1) The index sequences are determined by the index-sequence table. Since Hubbard terms are quartic and cannot be represented in lattice representations, the sequences will never be in the Nambu space.
         2) Because of the hermiticity of the Hamiltonian, when the parameter 'half' is set to be true, only one half of the set is returned. Note that the coefficient of the self-hermitian operators is also divided by a factor 2 so that the whole set exactly equals the returned set plus its Hermitian conjugate. The half=False case is not supported yet.
         '''
         result=OperatorList()
-        buff=self.mesh(bond)
+        buff=self.mesh(bond,dtype=dtype)
         indices=argwhere(abs(buff)>RZERO)
         for (i,j,k,l) in indices:
             index1=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(i))

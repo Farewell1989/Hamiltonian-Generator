@@ -24,6 +24,6 @@ def test_vca():
                 )
             )
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
-    a.addapps('DOS',DOS(BZ=square_bz(nk=100),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
+    #a.addapps('DOS',DOS(BZ=square_bz(nk=100),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
     a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
     a.runapps()

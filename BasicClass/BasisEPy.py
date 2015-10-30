@@ -2,7 +2,6 @@ from numpy import *
 from math import factorial
 from itertools import combinations
 from numba import jit
-import GlobalPy as GP
 
 class BasisE:
     '''
@@ -10,11 +9,11 @@ class BasisE:
     1) basis_type: a string to distinguish the type of the three kinds of fore mentioned systems;
     2) nstate: an array containing the numbers of states;
     3) nparticle: an array containing the numbers of particles;
-    4) basis_table: the table of allowed binary basis of the Hilbert space.
-    5) nbasis: the dimension of the Hilbert space;
+    4) basis_table: the table of allowed binary basis of the Hilbert space;
+    5) nbasis: the dimension of the Hilbert space.
     '''
     
-    def __init__(self,tuple=(),up=(),down=(),nstate=0):
+    def __init__(self,tuple=(),up=(),down=(),nstate=0,dtype=int64):
         '''
         There are three ways to initialize a BasisE instance:
         1) Assign the parameter nstate only, which will generate the basis for a particle-non-conserved system with nstate available generalized orbitals(the site and spin index are interpreted as generalized orbital index). The attribute basis_type will be "EG".
@@ -26,13 +25,13 @@ class BasisE:
             self.basis_type="EP"
             self.nstate=array(tuple[0])
             self.nparticle=array(tuple[1])
-            self.basis_table=basis_table_ep(tuple[0],tuple[1])
+            self.basis_table=basis_table_ep(tuple[0],tuple[1],dtype=dtype)
             self.nbasis=len(self.basis_table)
         elif len(up)==2 and len(down)==2:
             self.basis_type="ES"
             self.nstate=array([up[0],down[0]])
             self.nparticle=array([up[1],down[1]])
-            self.basis_table=basis_table_es(up,down)
+            self.basis_table=basis_table_es(up,down,dtype=dtype)
             self.nbasis=len(self.basis_table)
         else:
             self.basis_type="EG"
@@ -54,11 +53,11 @@ class BasisE:
                 result+=str(i)+': '+'{0:b}'.format(v)+'\n'
         return result
 
-def basis_table_ep(nstate,nparticle):
+def basis_table_ep(nstate,nparticle,dtype=int64):
     '''
     Generate the binary basis table with nstate orbitals occupied by nparticle electrons.
     '''
-    result=zeros(factorial(nstate)/factorial(nparticle)/factorial(nstate-nparticle),dtype=GP.B_dtype)
+    result=zeros(factorial(nstate)/factorial(nparticle)/factorial(nstate-nparticle),dtype=dtype)
     buff=combinations(xrange(nstate),nparticle)
     for i,v in enumerate(buff):
         basis=0
@@ -68,11 +67,11 @@ def basis_table_ep(nstate,nparticle):
     result.sort()
     return result
 
-def basis_table_es(up,down):
+def basis_table_es(up,down,dtype=int64):
     '''
     Generate the binary basis table according to the up and down tuples.
     '''
-    result=zeros(factorial(up[0])/factorial(up[1])/factorial(up[0]-up[1])*factorial(down[0])/factorial(down[1])/factorial(down[0]-down[1]),dtype=GP.B_dtype)
+    result=zeros(factorial(up[0])/factorial(up[1])/factorial(up[0]-up[1])*factorial(down[0])/factorial(down[1])/factorial(down[0]-down[1]),dtype=dtype)
     buff_up=list(combinations(xrange(up[0]),up[1]))
     buff_dn=list(combinations(xrange(down[0]),down[1]))
     count=0

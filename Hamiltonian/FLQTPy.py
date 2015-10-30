@@ -14,7 +14,7 @@ class FLQT(TBA):
 
     def evolution(self,t=[],**karg):
         nmatrix=len(self.generator.table)
-        result=eye(nmatrix,dtype=GP.Q_dtype)
+        result=eye(nmatrix,dtype=complex128)
         nt=len(t)
         for i,time in enumerate(t):
             if i<nt-1:

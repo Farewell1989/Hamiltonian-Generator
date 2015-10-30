@@ -3,8 +3,7 @@ from IndexPackagePy import *
 from IndexPy import *
 from BondPy import *
 from TablePy import *
-from OperatorPy import *
-import GlobalPy as GP 
+from OperatorPy import * 
 class Quadratic(Term):
     '''
     Class Quadratic provides a complete and unified description for quadratic terms, i.e. hopping terms, onsite terms and pairing terms. It has the following attributes:
@@ -67,13 +66,13 @@ class Quadratic(Term):
         result.append(deepcopy(self))
         return result
 
-    def mesh(self,bond,half=True):
+    def mesh(self,bond,half=True,dtype=complex128):
         '''
         Generate the mesh of a quadratic term defined on a bond.
         '''
         n1=bond.epoint.norbital*bond.epoint.nspin*bond.epoint.nnambu
         n2=bond.spoint.norbital*bond.spoint.nspin*bond.spoint.nnambu
-        result=zeros((n1,n2),dtype=GP.Q_dtype)
+        result=zeros((n1,n2),dtype=dtype)
         if self.neighbour==bond.neighbour:
             value=self.value*(1 if self.amplitude==None else self.amplitude(bond))
             if callable(self.indexpackages):
@@ -179,31 +178,31 @@ class QuadraticList(list):
             raise ValueError('QuadraticList "+" error: the other parameter must be an instance of Quadratic or QuadraticList.')
         return result
 
-    def mesh(self,bond,half,mask=None):
+    def mesh(self,bond,half,mask=None,dtype=complex128):
         '''
         Generate the mesh of all quadratic terms defined on a bond.
         '''
         if bond.epoint.nnambu==bond.spoint.nnambu:
             n1=bond.epoint.norbital*bond.epoint.nspin*bond.epoint.nnambu
             n2=bond.spoint.norbital*bond.spoint.nspin*bond.spoint.nnambu
-            result=zeros((n1,n2),dtype=GP.Q_dtype)
+            result=zeros((n1,n2),dtype=dtype)
             for obj in self:
                 if mask is None or mask(obj):
-                    result+=obj.mesh(bond,half)
+                    result+=obj.mesh(bond,half,dtype=dtype)
             return result
         else:
             raise ValueError('Quadratic mesh error: the nnambu of epoint and spoint must be equal.')
 
-    def operators(self,bond,table,half=True):
+    def operators(self,bond,table,half=True,dtype=complex128):
         '''
         Generate the set of non-zero operators defined on the input bond.
         1) The index sequences are determined by the index-sequence table.
         2) Because of the hermiticity of the Hamiltonian, when the parameter 'half' is set to be true, only one half of the set is returned. Note that the coefficient of the self-hermitian operators is also divided by a factor 2 so that the whole set exactly equals the returned set plus its Hermitian conjugate.
         3) As for the BdG case, when half=True, only the electron part of the hopping terms and onsite terms are generated since the hole part is nothing but the minus electron part in the matrix representation. As a result, only one quarter of the hopping terms and onsite terms are returned.
         '''
-        result=_operators(self.mesh(bond,half),bond,table,half)
+        result=_operators(self.mesh(bond,half,dtype=dtype),bond,table,half)
         if bond.neighbour!=0:
-            result.extend(_operators(self.mesh(bond.reversed(),half,mask=lambda quadratic: True if quadratic.mode=='pr' else False),bond.reversed(),table,half))
+            result.extend(_operators(self.mesh(bond.reversed(),half,mask=lambda quadratic: True if quadratic.mode=='pr' else False,dtype=dtype),bond.reversed(),table,half))
         return result
 
 def _operators(mesh,bond,table,half=True):
