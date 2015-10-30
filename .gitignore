@@ -1,0 +1,6 @@
+*.pyc
+*.so
+*.dat
+*.txt
+*.png
+Model/Results
