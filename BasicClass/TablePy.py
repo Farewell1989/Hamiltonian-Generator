@@ -5,7 +5,7 @@ class Table(dict):
     '''
     def __init__(self,indices=[],dict={},f=None):
         '''
-        If the function f is assigned, the sequence number corresponding to a index will be set by f. Otherwise it  equals the index's order in the indices list. An ordinary dictionary can also be used to initialize an instance.
+        If the function f is assigned, the sequence number corresponding to a index will be set by f. Otherwise it equals the index's order in the indices list. An ordinary dictionary can also be used to initialize an instance.
         '''
         for i,v in enumerate(indices):
             if f==None:

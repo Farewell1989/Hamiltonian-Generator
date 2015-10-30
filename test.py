@@ -34,7 +34,6 @@ for arg in sys.argv:
     if arg in ('lattice','all'):
         from Test.Lattice import *
         test_lattice()
-        test_lattice_indices()
     if arg in ('basise','all'):
         from Test.BasisE import *
         test_basise()

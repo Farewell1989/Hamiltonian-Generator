@@ -91,13 +91,7 @@ class Lattice:
                             result.append(Index(scope=self.name,site=point.site,orbital=orbital,spin=spin,nambu=buff))
                     else:
                         result.append(Index(scope=self.name,site=point.site,orbital=orbital,spin=spin,nambu=ANNIHILATION))
-        buff=[]
-        for i in result:
-            buff.append(i.to_str(indication='p'+self.priority))
-        result=[]
-        for i in sorted(buff):
-            result.append(to_index(str=i,indication='p'+self.priority))
-        return result
+        return sorted(result,key=lambda value: value.to_tuple(indication='p'+self.priority))
 
 def bonds(points,vectors=None,nneighbour=1):
     '''
@@ -185,4 +179,34 @@ def reciprocals(vectors):
             result.append(array(buff[2,0:ndim]*2*pi))
     else:
         raise ValueError('Reciprocals error: the number of translation vectors should not be greater than 3.')
+    return result
+
+def SuperLattice(name,sub_lattices,vectors=[],nneighbour=1,priority='NSCO'):
+    '''
+    This function returns the combination of two or more lattices.
+    '''
+    result=Lattice(name=name,points=deepcopy([point for lattice in sub_lattices for point in lattice.points]),vectors=vectors,nneighbour=nneighbour,priority=priority)
+    for i in xrange(len(result.points)):
+        result.points[i].site=i
+    result.sub_lattices=sub_lattices
+    return result
+
+def points_shifted(points,vector,scope=None):
+    '''
+    This function returns the translated points.
+    '''
+    result=[]
+    for p in points:
+        result.append(
+            Point(
+                scope=scope if scope is None else p.scope,
+                site=p.site,
+                rcoord=p.rcoord+vector,
+                icoord=p.icoord,
+                atom=p.atom,
+                norbital=p.norbital,
+                nspin=p.nspin,
+                nnambu=p.nnambu
+                )
+        )
     return result

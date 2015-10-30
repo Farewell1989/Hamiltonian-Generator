@@ -96,6 +96,24 @@ class Index:
                 result+=self.scope+' '
         return result
 
+    def to_tuple(self,indication):
+        '''
+        Convert an instance to tuple according to the parameter indication.
+        '''
+        result=()
+        for i in indication:
+            if i in ('N','n'):
+                result+=(self.nambu,)
+            elif i in ('S','s'):
+                result+=(self.spin,)
+            elif i in ('C','c'):
+                result+=(self.site,)
+            elif i in ('O','o'):
+                result+=(self.orbital,)
+            elif i in ('P','p'):
+                result+=(self.scope,)
+        return result
+
 def to_index(str,indication):
     '''
     Convert a string to index according to the parameter indication.
