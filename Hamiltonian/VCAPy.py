@@ -80,23 +80,6 @@ class VCA(ONR):
             for j,optj in enumerate(buff[i]):
                 self.clmap['seqs'][i,j],self.clmap['coords'][i,j,:]=optj.seqs[0]+1,optj.rcoords[0]
 
-    def gf(self,omega):
-        if not 'GF' in self.apps:
-            self.addapps(app=GF((len(self.operators['sp']),len(self.operators['sp'])),run=ONRGF))
-        self.apps['GF'].omega=omega
-        self.runapps('GF')
-        return self.apps['GF'].gf
-
-    def gf_mesh(self,omegas):
-        if 'gf_mesh' in self.cache:
-            return self.cache['gf_mesh']
-        else:
-            result=zeros((omegas.shape[0],len(self.operators['sp']),len(self.operators['sp'])),dtype=complex128)
-            for i,omega in enumerate(omegas):
-                result[i,:,:]=self.gf(omega)
-            self.cache['gf_mesh']=result
-            return result
-
     def pt(self,ks):
         ngf=len(self.operators['sp'])
         result=zeros((ngf,ngf),dtype=complex128)
@@ -114,9 +97,8 @@ class VCA(ONR):
             self.cache['pt_mesh']=result
             return result
 
-    def gf_vca(self,omega=None,ks=None):
-        ngf,ngf_vca=len(self.operators['sp']),len(self.operators['csp'])
-        gf=self.apps['GF'].gf if omega==None else self.gf(omega)
+    def gf_vca(self,omega=None,ks=[]):
+        ngf,ngf_vca,gf=len(self.operators['sp']),len(self.operators['csp']),self.gf(omega)
         return gf_contract(ks=ks,gf_buff=dot(gf,inv(identity(ngf,dtype=complex128)-dot(self.pt(ks),gf))),seqs=self.clmap['seqs'],coords=self.clmap['coords'])/(ngf/ngf_vca)
 
     def gf_vca_kmesh(self,omega,kmesh):
@@ -159,9 +141,9 @@ def has_integer_solution(coords,vectors):
         return False
 
 def VCAEB(engine,app):
+    engine.cache.pop('pt_mesh',None)
     erange=linspace(app.emin,app.emax,app.ne)
     result=zeros((app.path.rank,app.ne))
-    engine.cache.pop('pt_mesh',None)
     for i,omega in enumerate(erange):
         result[:,i]=-2*imag((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.path.mesh),axis1=1,axis2=2)))
     if app.save_data:
@@ -186,10 +168,9 @@ def VCAFS(engine,app):
     pass
 
 def VCADOS(engine,app):
-    engine.addapps(app=GF((len(engine.operators['sp']),len(engine.operators['sp'])),run=ONRGF))
+    engine.cache.pop('pt_mesh',None)
     erange=linspace(app.emin,app.emax,app.ne)
     result=zeros((app.ne,2))
-    engine.cache.pop('pt_mesh',None)
     for i,omega in enumerate(erange):
         result[i,0]=omega
         result[i,1]=-2*imag(sum((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.BZ.mesh),axis1=1,axis2=2))))

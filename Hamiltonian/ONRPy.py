@@ -44,8 +44,15 @@ class ONR(Engine):
         self.name.update(self.generator.parameters['alter'])
         self.operators={}
         self.set_operators()
+        self.cache={}
 
     def set_operators(self):
+        '''
+        Prepare the operators that will be needed in future calculations.
+        Generally, there are two entries in the dict "self.operators":
+        1) 'h': stands for 'Hamiltonian', which contains half of the operators of the Hamiltonian;
+        2) 'sp': stands for 'single particle', which contains all the allowed or needed single particle operators. When self.nspin==1 and self.basis.basis_type=='es' (spin-conserved systems), only spin-down single particle operators are included.
+        '''
         self.set_operators_hamiltonian()
         self.set_operators_single_particle()
 
@@ -60,11 +67,38 @@ class ONR(Engine):
         self.operators['sp'].sort(key=lambda operator: operator.seqs[0])
 
     def set_matrix(self):
+        '''
+        Set the csc_matrix representation of the Hamiltonian.
+        '''
         self.matrix=csr_matrix((self.basis.nbasis,self.basis.nbasis),dtype=complex128)
         for operator in self.operators['h']:
             self.matrix+=opt_rep(operator,self.basis,transpose=False)
         self.matrix+=conjugate(transpose(self.matrix))
         self.matrix=transpose(self.matrix)
+
+    def gf(self,omega=None):
+        '''
+        Return the single particle Green's function of the system.
+        '''
+        if not 'GF' in self.apps:
+            self.addapps(app=GF((len(self.operators['sp']),len(self.operators['sp'])),run=ONRGF))
+        if not omega is None:
+            self.apps['GF'].omega=omega
+            self.runapps('GF')
+        return self.apps['GF'].gf
+
+    def gf_mesh(self,omegas):
+        '''
+        Return the mesh of the single particle Green's functions of the system.
+        '''
+        if 'gf_mesh' in self.cache:
+            return self.cache['gf_mesh']
+        else:
+            result=zeros((omegas.shape[0],len(self.operators['sp']),len(self.operators['sp'])),dtype=complex128)
+            for i,omega in enumerate(omegas):
+                result[i,:,:]=self.gf(omega)
+            self.cache['gf_mesh']=result
+            return result
 
 def ONRGFC(engine,app):
     nopt=len(engine.operators['sp'])
@@ -160,13 +194,11 @@ def ONRGF(engine,app):
                 app.gf[i,j]+=inner(coeff[i,j,h,0,:],solve_banded((1,1),buff,b,overwrite_ab=True,overwrite_b=True,check_finite=False))
 
 def ONRDOS(engine,app):
-    engine.addapps(app=GF((len(engine.operators['sp']),len(engine.operators['sp'])),run=ONRGF))
+    engine.cache.pop('gf_mesh',None)
+    erange=linspace(app.emin,app.emax,num=app.ne)
     result=zeros((app.ne,2))
-    for i,omega in enumerate(linspace(app.emin,app.emax,num=app.ne)):
-        engine.apps['GF'].omega=omega+engine.mu+app.delta*1j
-        engine.runapps('GF')
-        result[i,0]=omega
-        result[i,1]=-2*imag(trace(engine.apps['GF'].gf))
+    result[:,0]=erange
+    result[:,1]=-2*imag(trace(engine.gf_mesh(erange[:]+engine.mu+1j*app.delta),axis1=1,axis2=2))
     if app.save_data:
         savetxt(engine.dout+'/'+engine.name.full_name+'_DOS.dat',result)
     if app.plot:
