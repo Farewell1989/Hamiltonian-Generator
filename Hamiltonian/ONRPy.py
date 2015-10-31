@@ -14,15 +14,18 @@ import os.path,sys
 class ONR(Engine):
     '''
     The class ONR provides the methods to get the sparse matrix representation on the occupation number basis of an electron system. Apart from those inherited from its parent class Engine, it has the following attributes:
-    1) name: the name of system;
+    1) name: the name of the system;
     2) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
     3) filling: the filling factor of the system;
     4) mu: the chemical potential of the system;
     5) basis: the occupation number basis of the system;
     6) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no; 
     7) generator: the operator generator;
-    8) operators: a dict containing different groups of operators for diverse tasks, e.g. entry 'h' includes "half" the operators of the Hamiltonian, entry 'sp' includes all the single-particle operators, etc;
-    9) matrix: the sparse matrix representation of the system.
+    8) operators: a dict containing different groups of operators for diverse tasks, which generally has two entries:
+        (1) entry 'h' includes "half" the operators of the Hamiltonian, and
+        (2) entry 'sp' includes all the single-particle operators;
+    9) matrix: the sparse matrix representation of the system;
+    10) cache: the cache during the process of calculation.
     '''
 
     def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,generator=None,**karg):

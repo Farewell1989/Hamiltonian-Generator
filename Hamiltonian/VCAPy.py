@@ -3,6 +3,27 @@ from BasicClass.BaseSpacePy import *
 from VCA_Fortran import *
 class VCA(ONR):
     '''
+    The class VCA implements the algorithm of the variational cluster approximation of an electron system. Apart from those inherited from the class Engine, it has the following attributes:
+    1) name: the name of the system;
+    2) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
+    3) filling: the filling factor of the system;
+    4) mu: the chemical potential of the system;
+    5) basis: the occupation number basis of the system;
+    6) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no;
+    7) cell : the unit cell of the system;
+    8) ctable: the index table of the unit cell;
+    9) generator: the operator generator;
+    10) weiss: an instance of Generator which describes the Weiss terms added to the system;
+    11) operators: a dict containing different groups of operators for diverse tasks, which generally has four entries:
+        (1) entry 'h' includes "half" the operators of the Hamiltonian intra the cluster,
+        (2) entry 'pt' includes "half" the operators of the perturbation terms inter the clusters,
+        (3) entry 'sp' includes all the single-particle operators intra the cluster, and
+        (4) entry 'csp' includes all the single-particle operators intra the unit cell;
+    12) clmap: a dict containing the information needed to restore the translation symmetry broken by the choosing of the clusters, which has two entries:
+        (1) 'seqs': a two dimensinal array whose element[i,j] represents the index sequence of the j-th single-particle operator within the cluster which should correspond to the i-th single-particle operator within the unit cell after the restoration of the translation symmetry;
+        (2) 'coords': a three dimensinal array whose element[i,j,:] represents the rcoords of the j-th single-particle operator within the cluster which should correspond to the i-th single-particle operator within the unit cell after the restoration of the translation symmetry;
+    13) matrix: the sparse matrix representation of the system;
+    14) cache: the cache during the process of calculation.
     '''
     def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,cell=None,generator=None,weiss=None,**karg):
         self.name=Name(prefix=name,suffix=self.__class__.__name__)
@@ -33,6 +54,14 @@ class VCA(ONR):
         self.cache={}
 
     def set_operators(self):
+        '''
+        Prepare the operators needed in future calculations.
+        Generally, there are four entries in the dict "self.operators":
+        1) 'h': stands for 'Hamiltonian', which contains half of the intra-cluster operators of the Hamiltonian;
+        2) 'pt': stands for 'perturbation', which contains half of the inter-cluster operators as the perturbation terms;
+        3) 'sp': stands for 'single particle', which contains all the allowed or needed single particle operators within the cluster. When self.nspin==1 and self.basis.basis_type=='es' (spin-conserved systems), only spin-down single particle operators are included;
+        4) 'csp': stands for 'cell single particle', which contains all the allowed or needed single particle operators within the unit cell. When self.nspin==1 and self.basis.basis_type=='es' (spin-conserved systems), only spin-down single particle operators are included.
+        '''
         self.set_operators_hamiltonian_and_perturbation()
         self.set_operators_single_particle()
         self.set_operators_cell_single_particle()
@@ -66,6 +95,9 @@ class VCA(ONR):
         self.operators['csp'].sort(key=lambda opt: opt.seqs[0])
 
     def set_clmap(self):
+        '''
+        self.clmap is a dict which contains the necessary information to restore the translation symmetry broken by the different treating of inter and intra cluster quadratics.
+        '''
         nsp,ncsp,ndim=len(self.operators['sp']),len(self.operators['csp']),len(self.operators['csp'][0].rcoords[0])
         buff=[]
         for i in xrange(ncsp):
@@ -81,6 +113,9 @@ class VCA(ONR):
                 self.clmap['seqs'][i,j],self.clmap['coords'][i,j,:]=optj.seqs[0]+1,optj.rcoords[0]
 
     def pt(self,ks):
+        '''
+        Returns the matrix form of the perturbation terms.
+        '''
         ngf=len(self.operators['sp'])
         result=zeros((ngf,ngf),dtype=complex128)
         for opt in self.operators['pt']:
@@ -88,6 +123,9 @@ class VCA(ONR):
         return result+conjugate(result.T)
 
     def pt_mesh(self,kmesh):
+        '''
+        Returns the mesh of the perturbation terms.
+        '''
         if 'pt_mesh' in self.cache:
             return self.cache['pt_mesh']
         else:
@@ -98,10 +136,16 @@ class VCA(ONR):
             return result
 
     def gf_vca(self,omega=None,ks=[]):
+        '''
+        Returns the single particle Green's function of the system.
+        '''
         ngf,ngf_vca,gf=len(self.operators['sp']),len(self.operators['csp']),self.gf(omega)
         return gf_contract(ks=ks,gf_buff=dot(gf,inv(identity(ngf,dtype=complex128)-dot(self.pt(ks),gf))),seqs=self.clmap['seqs'],coords=self.clmap['coords'])/(ngf/ngf_vca)
 
     def gf_vca_kmesh(self,omega,kmesh):
+        '''
+        Returns the mesh of the single particle Green's functions of the system.
+        '''
         ngf,ngf_vca=len(self.operators['sp']),len(self.operators['csp'])
         gf=self.gf(omega)
         buff=einsum('jk,ikl->ijl',gf,inv(identity(ngf,dtype=complex128)-dot(self.pt_mesh(kmesh),gf)))
