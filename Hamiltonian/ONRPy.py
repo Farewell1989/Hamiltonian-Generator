@@ -22,16 +22,17 @@ class ONR(Engine):
     6) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no; 
     7) lattice: the lattice of the system;
     8) terms: the terms of the system;
-    9) generators: a dict containing the needed operator generators, which generally has only one entry:
+    9) nambu: a flag to tag whether pairing terms are involved;
+    10) generators: a dict containing the needed operator generators, which generally has only one entry:
         (1) entry 'h' is the generator for the whole Hamiltonian;
-    10) operators: a dict containing different groups of operators for diverse tasks, which generally has two entries:
+    11) operators: a dict containing different groups of operators for diverse tasks, which generally has two entries:
         (1) entry 'h' includes "half" the operators of the Hamiltonian, and
         (2) entry 'sp' includes all the single-particle operators;
-    11) matrix: the sparse matrix representation of the system;
-    12) cache: the cache during the process of calculation.
+    12) matrix: the sparse matrix representation of the system;
+    13) cache: the cache during the process of calculation.
     '''
 
-    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,lattice=None,terms=None,**karg):
+    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,lattice=None,terms=None,nambu=False,**karg):
         self.name=Name(prefix=name,suffix=self.__class__.__name__)
         self.ensemble=ensemble
         self.filling=filling
@@ -44,6 +45,7 @@ class ONR(Engine):
         self.nspin=nspin if basis.basis_type=='ES' else 2
         self.lattice=lattice
         self.terms=terms
+        self.nambu=nambu
         self.generators={}
         self.generators['h']=Generator(bonds=lattice.bonds,table=Table(lattice.indices(nambu=False)),terms=terms,nambu=False,half=True)
         self.name.update(self.generators['h'].parameters['const'])
@@ -67,7 +69,7 @@ class ONR(Engine):
 
     def set_operators_single_particle(self):
         self.operators['sp']=OperatorList()
-        table=self.generators['h'].table if self.nspin==2 else subset(self.generators['h'].table,mask=lambda index: True if index.spin==0 else False)
+        table=Table(self.lattice.indices(nambu=self.nambu)) if self.nspin==2 else subset(Table(self.lattice.indices(nambu=self.nambu)),mask=lambda index: True if index.spin==0 else False)
         for index,sequence in table.iteritems():
             if isinstance(index,Index):self.operators['sp'].append(E_Linear(1,indices=[index],rcoords=[self.lattice.points[index.site].rcoord],icoords=[self.lattice.points[index.site].icoord],seqs=[sequence]))
         self.operators['sp'].sort(key=lambda operator: operator.seqs[0])
