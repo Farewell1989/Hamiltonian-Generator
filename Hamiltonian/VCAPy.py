@@ -77,12 +77,12 @@ class VCA(ONR):
         3) 'sp': stands for 'single particle', which contains all the allowed or needed single particle operators within the cluster. When self.nspin==1 and self.basis.basis_type=='es' (spin-conserved systems), only spin-down single particle operators are included;
         4) 'csp': stands for 'cell single particle', which contains all the allowed or needed single particle operators within the unit cell. When self.nspin==1 and self.basis.basis_type=='es' (spin-conserved systems), only spin-down single particle operators are included.
         '''
-        self.set_operators_hamiltonian_and_perturbation()
+        self.set_operators_hamiltonian()
+        self.set_operators_perturbation()
         self.set_operators_single_particle()
         self.set_operators_cell_single_particle()
 
-    def set_operators_hamiltonian_and_perturbation(self):
-        self.operators['h']=self.generators['h'].operators
+    def set_operators_perturbation(self):
         self.operators['pt']=OperatorList()
         table=self.generator['pt'].table if self.nspin==2 else subset(self.generators['pt'].table,mask=lambda index: True if index.spin==0 else False)
         for opt in self.generators['pt'].operators:
