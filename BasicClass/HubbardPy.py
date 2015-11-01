@@ -128,6 +128,21 @@ class HubbardList(list):
             raise ValueError('HubbardList "+" error: the other parameter must be an instance of Hubbard or HubbardList')
         return result
 
+    def __mul__(self,other):
+        '''
+        Overloaded operator(*), which supports the left multiplication with a scalar.
+        '''
+        result=HubbardList()
+        for obj in self:
+            result.append(obj*other)
+        return result
+
+    def __rmul__(self,other):
+        '''
+        Overloaded operator(*), which supports the right multiplication with a scalar.
+        '''
+        return self.__mul__(other)
+
     def mesh(self,bond,dtype=float64):
         '''
         Generate the mesh of all Hubbard terms defined on a bond.

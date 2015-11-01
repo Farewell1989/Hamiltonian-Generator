@@ -65,6 +65,9 @@ for arg in sys.argv:
     if arg in ('vca','all'):
         from Test.VCA import *
         test_vca()
+    if arg in ('vcacct','all'):
+        from Test.VCACCT import *
+        test_vcacct()
     if arg in ('model.s_wave','model'):
         from Model.S_wave import *
         S_wave()

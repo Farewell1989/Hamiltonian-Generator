@@ -4,30 +4,28 @@ from BasicClass.OperatorPy import *
 from numpy.linalg import norm
 class Generator:
     '''
-    Class Generator provides methods to generate and update operators of a Hamiltonian according to the lattice of the model and the descriptions of its terms. It has the following attributes:
-    1) lattice: the lattice of the model;
-    2) parameters: a dict containing all model parameters, divided into two groups, the constant ones and the alterable ones;
-    3) terms: a dict containing all terms contained in the model, divided into two groups, the constant ones and the alterable ones;
-    4) nambu: a flag to tell whether the nambu space takes part;
-    5) table: the index-sequence table of the system;
+    Class Generator provides methods to generate and update operators of a Hamiltonian according to the bonds of the model and the descriptions of its terms. It has the following attributes:
+    1) bonds: the bonds of the model;
+    2) table: the index-sequence table of the system;
+    3) parameters: a dict containing all model parameters, divided into two groups, the constant ones and the alterable ones;
+    4) terms: a dict containing all terms contained in the model, divided into two groups, the constant ones and the alterable ones;
+    5) nambu: a flag to tell whether the nambu space takes part;
     6) half: a flag to tell whether the generated operators contains its hermitian conjugate part;
     7) cache: the working cache used to handle the generation and update of the operators.
     '''
-    def __init__(self,lattice,parameters=None,terms=None,nambu=False,half=True):
-        self.lattice=lattice
+    def __init__(self,bonds,table,terms=None,nambu=False,half=True):
+        self.bonds=bonds
+        self.table=table
         self.parameters={}
         self.terms={}
-        self.set_parameters_and_terms(parameters,terms)
+        self.set_parameters_and_terms(terms)
         self.nambu=nambu
-        self.table=Table(self.lattice.indices(nambu=self.nambu))
         self.half=half
         self.cache={}
         self.set_cache()
 
-    def set_parameters_and_terms(self,parameters,terms):
+    def set_parameters_and_terms(self,terms):
         self.parameters['const']={}
-        if not parameters is None:
-            self.parameters['const'].update(parameters)
         self.parameters['alter']={}
         self.terms['const']={}
         self.terms['alter']={}
@@ -47,17 +45,15 @@ class Generator:
     def set_cache(self):
         if 'const' in self.terms:
             self.cache['const']=OperatorList()
-            for bonds in self.lattice.bonds:
-                for bond in bonds:
-                    for terms in self.terms['const'].itervalues():
-                        self.cache['const'].extend(terms.operators(bond,self.table,half=self.half))
+            for bond in self.bonds:
+                for terms in self.terms['const'].itervalues():
+                    self.cache['const'].extend(terms.operators(bond,self.table,half=self.half))
         if 'alter' in self.terms:
             self.cache['alter']={}
             for key in self.terms['alter'].iterkeys():
                 self.cache['alter'][key]=OperatorList()
-                for bonds in self.lattice.bonds:
-                    for bond in bonds:
-                        self.cache['alter'][key].extend(self.terms['alter'][key].operators(bond,self.table,half=self.half))
+                for bond in self.bonds:
+                    self.cache['alter'][key].extend(self.terms['alter'][key].operators(bond,self.table,half=self.half))
 
     def __str__(self):
         result='Parameters:\n'
@@ -93,6 +89,5 @@ class Generator:
             for key,mask in masks.iteritems():
                 if mask:
                     self.cache['alter'][key]=OperatorList()
-                    for bonds in self.lattice.bonds:
-                        for bond in bonds:
-                            self.cache['alter'][key].extend(self.terms['alter'][key].operators(bond,self.table,half=self.half))
+                    for bond in self.bonds:
+                        self.cache['alter'][key].extend(self.terms['alter'][key].operators(bond,self.table,half=self.half))

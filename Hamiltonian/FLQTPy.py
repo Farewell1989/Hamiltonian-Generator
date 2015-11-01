@@ -4,12 +4,14 @@ class FLQT(TBA):
     '''
     Class FLQT deals with floquet problems.  
     '''
-    def __init__(self,name=None,filling=0,mu=0,generator=None,**karg):
+    def __init__(self,name=None,filling=0,mu=0,lattice=None,terms=None,nambu=False,**karg):
         super(FLQT,self).__init__(
             name=       name,
             filling=    filling,
             mu=         mu,
-            generator=  generator
+            lattice=    lattice,
+            terms=      terms,
+            nambu=      nambu
             )
 
     def evolution(self,t=[],**karg):

@@ -15,12 +15,10 @@ def test_onr():
             basis=      BasisE(up=(m*n,m*n/2),down=(m*n,m*n/2)),
             #basis=      BasisE((2*m*n,m*n)),
             nspin=      2,
-            generator=  Generator(
-                lattice=    Lattice(name='WG'+str(m)+str(n),points=[p1],translations=[(a1,m),(a2,n)]),
-                terms=[     Hopping('t',t,neighbour=1),
-                            Hubbard('U',[U])
-                            ]
-            )
+            lattice=    Lattice(name='WG'+str(m)+str(n),points=[p1],translations=[(a1,m),(a2,n)]),
+            terms=[     Hopping('t',t,neighbour=1),
+                        Hubbard('U',[U])
+                        ]
         )
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
     a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,delta=0.05,save_data=False,run=ONRDOS,show=True))

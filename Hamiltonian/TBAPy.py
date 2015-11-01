@@ -10,19 +10,22 @@ class TBA(Engine):
     1) name: the name of system;
     2) filling: the filling factor of the system;
     3) mu: the chemical potential of the system;
-    4) generator: the operator generator;
+    4) lattice: the lattice of the system;
+    5) terms: the terms of the systems;
+    6) generator: the operator generator;
     Supported apps and the corresponding run methods include:
     1) EB (energy bands) with method TBAEB,
     2) DOS (density of states) with TBADOS.
     '''
     
-    def __init__(self,name=None,filling=0,mu=0,generator=None,**karg):
+    def __init__(self,name=None,filling=0,mu=0,lattice=None,terms=None,nambu=False,**karg):
         self.name=Name(prefix=name,suffix=self.__class__.__name__)
         self.filling=filling
         self.mu=mu
-        self.generator=generator
-        if not self.generator is None:
-            self.name.update(self.generator.parameters['const'])
+        self.lattice=lattice
+        self.terms=terms
+        self.generator=Generator(bonds=lattice.bonds,table=Table(lattice.indices(nambu)),terms=terms,nambu=nambu,half=True)
+        self.name.update(self.generator.parameters['const'])
 
     def matrix(self,k=[],**karg):
         self.generator.update(**karg)

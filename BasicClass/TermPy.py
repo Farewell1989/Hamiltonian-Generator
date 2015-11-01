@@ -1,3 +1,5 @@
+from numpy import *
+from copy import deepcopy
 class Term(object):
     '''
     Class Term is the base class for all kinds of terms contained in a Hamiltonian. It has the following attributes:
@@ -9,6 +11,20 @@ class Term(object):
     def __init__(self,mode,tag,value,modulate=None):
         self.mode=mode
         self.tag=tag
-        self.value=value
+        self.value=array(value)
         if not modulate is None:
             self.modulate=modulate
+
+    def __mul__(self,other):
+        '''
+        Overloaded operator(*) which supports the left multiplication with a scalar.
+        '''
+        result=deepcopy(self)
+        result.value*=other
+        return result
+ 
+    def __rmul__(self,other):
+        '''
+        Overloaded operator(*) which supports the right multiplication with a scalar.
+        '''
+        return self.__mul__(other)

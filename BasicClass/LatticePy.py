@@ -36,7 +36,7 @@ class Lattice:
         self.vectors=vectors
         self.reciprocals=reciprocals(self.vectors)
         self.nneighbour=nneighbour
-        self.bonds=bonds(self.points,self.vectors,self.nneighbour)
+        self.bonds=[b for bs in bonds(self.points,self.vectors,self.nneighbour) for b in bs]
         self.priority=priority
 
     def __str__(self):
@@ -56,19 +56,19 @@ class Lattice:
         plt.axes(frameon=0)
         plt.axis('equal')
         plt.title(self.name)
-        for nb,bonds in enumerate(self.bonds):
+        for bond in self.bonds:
+            nb=bond.neighbour
             if nb==1: color='k'
             elif nb==2: color='r'
             elif nb==3: color='b'
             else: color=str(nb*1.0/self.nneighbour)
-            for bond in bonds:
-                if nb==0:
-                    plt.scatter(bond.spoint.rcoord[0],bond.spoint.rcoord[1])
+            if nb==0:
+                plt.scatter(bond.spoint.rcoord[0],bond.spoint.rcoord[1])
+            else:
+                if bond.is_intra_cell():
+                    plt.plot([bond.spoint.rcoord[0],bond.epoint.rcoord[0]],[bond.spoint.rcoord[1],bond.epoint.rcoord[1]],color=color)
                 else:
-                    if bond.is_intra_cell():
-                        plt.plot([bond.spoint.rcoord[0],bond.epoint.rcoord[0]],[bond.spoint.rcoord[1],bond.epoint.rcoord[1]],color=color)
-                    else:
-                        plt.plot([bond.spoint.rcoord[0],bond.epoint.rcoord[0]],[bond.spoint.rcoord[1],bond.epoint.rcoord[1]],color=color,ls='--')
+                    plt.plot([bond.spoint.rcoord[0],bond.epoint.rcoord[0]],[bond.spoint.rcoord[1],bond.epoint.rcoord[1]],color=color,ls='--')
         frame=plt.gca()
         frame.axes.get_xaxis().set_visible(False)
         frame.axes.get_yaxis().set_visible(False)
@@ -181,14 +181,14 @@ def reciprocals(vectors):
         raise ValueError('Reciprocals error: the number of translation vectors should not be greater than 3.')
     return result
 
-def SuperLattice(name,sub_lattices,vectors=[],nneighbour=1,priority='NSCO'):
+def SuperLattice(name,sublattices,vectors=[],nneighbour=1,priority='NSCO'):
     '''
     This function returns the combination of two or more lattices.
     '''
-    result=Lattice(name=name,points=deepcopy([point for lattice in sub_lattices for point in lattice.points]),vectors=vectors,nneighbour=nneighbour,priority=priority)
+    result=Lattice(name=name,points=deepcopy([point for lattice in sublattices for point in lattice.points]),vectors=vectors,nneighbour=nneighbour,priority=priority)
     for i in xrange(len(result.points)):
         result.points[i].site=i
-    result.sub_lattices=sub_lattices
+    result.sublattices=sublattices
     return result
 
 def points_shifted(points,vector,scope=None):

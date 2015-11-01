@@ -11,21 +11,25 @@ class VCA(ONR):
     5) basis: the occupation number basis of the system;
     6) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no;
     7) cell : the unit cell of the system;
-    8) ctable: the index table of the unit cell;
-    9) generator: the operator generator;
-    10) weiss: an instance of Generator which describes the Weiss terms added to the system;
-    11) operators: a dict containing different groups of operators for diverse tasks, which generally has four entries:
+    8) lattice: the cluster of the system;
+    9) terms: the terms of the system;
+    10) weiss: the Weiss terms added to the system;
+    11) nambu: a flag to tag whether pairing terms are involved;
+    12) generators: a dict containing the needed operator generators, which generally has two entries:
+        (1) entry 'h' is the generator for the cluster Hamiltonian including weiss terms;
+        (2) entry 'pt' is the generator for the perturbation terms including weiss ones;
+    13) operators: a dict containing different groups of operators for diverse tasks, which generally has four entries:
         (1) entry 'h' includes "half" the operators of the Hamiltonian intra the cluster,
         (2) entry 'pt' includes "half" the operators of the perturbation terms inter the clusters,
         (3) entry 'sp' includes all the single-particle operators intra the cluster, and
         (4) entry 'csp' includes all the single-particle operators intra the unit cell;
-    12) clmap: a dict containing the information needed to restore the translation symmetry broken by the choosing of the clusters, which has two entries:
+    14) clmap: a dict containing the information needed to restore the translation symmetry broken by the choosing of the clusters, which has two entries:
         (1) 'seqs': a two dimensinal array whose element[i,j] represents the index sequence of the j-th single-particle operator within the cluster which should correspond to the i-th single-particle operator within the unit cell after the restoration of the translation symmetry;
         (2) 'coords': a three dimensinal array whose element[i,j,:] represents the rcoords of the j-th single-particle operator within the cluster which should correspond to the i-th single-particle operator within the unit cell after the restoration of the translation symmetry;
-    13) matrix: the sparse matrix representation of the system;
-    14) cache: the cache during the process of calculation.
+    15) matrix: the sparse matrix representation of the system;
+    16) cache: the cache during the process of calculation.
     '''
-    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,cell=None,generator=None,weiss=None,**karg):
+    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,cell=None,lattice=None,terms=None,weiss=None,nambu=False,**karg):
         self.name=Name(prefix=name,suffix=self.__class__.__name__)
         self.ensemble=ensemble
         self.filling=filling
@@ -35,18 +39,29 @@ class VCA(ONR):
         elif self.ensemble.lower()=='g':
             self.name['mu']=self.mu
         self.basis=basis
-        if basis.basis_type=='ES':
-            self.nspin=nspin
-        else:
-            self.nspin=2
-        self.generator=generator
-        self.name.update(self.generator.parameters['const'])
-        self.name.update(self.generator.parameters['alter'])
+        self.nspin=nspin if basis.basis_type=='ES' else 2
         self.cell=cell
-        self.ctable=Table(self.cell.indices(nambu=generator.nambu))
-        self.weiss=Generator(lattice=self.generator.lattice,terms=weiss,nambu=self.generator.nambu,half=self.generator.half)
-        self.name.update(self.weiss.parameters['const'])
-        self.name.update(self.weiss.parameters['alter'])
+        self.lattice=lattice
+        self.terms=terms
+        self.weiss=weiss
+        self.nambu=nambu
+        self.generators={}
+        self.generators['h']=Generator(
+                    bonds=      [bond for bond in lattice.bonds if bond.is_intra_cell()],
+                    table=      Table(lattice.indices(nambu=False)),
+                    terms=      terms if weiss is None else terms+weiss,
+                    nambu=      False,
+                    half=       True
+                    )
+        self.generators['pt']=Generator(
+                    bonds=      [bond for bond in lattice.bonds if not bond.is_intra_cell()],
+                    table=      Table(lattice.indices(nambu=nambu)),
+                    terms=      terms if weiss is None else terms+[term*(-1) for term in weiss],
+                    nambu=      nambu,
+                    half=       True
+                    )
+        self.name.update(self.generators['h'].parameters['const'])
+        self.name.update(self.generators['h'].parameters['alter'])
         self.operators={}
         self.set_operators()
         self.clmap={}
@@ -67,28 +82,15 @@ class VCA(ONR):
         self.set_operators_cell_single_particle()
 
     def set_operators_hamiltonian_and_perturbation(self):
-        self.operators['h']=OperatorList()
+        self.operators['h']=self.generators['h'].operators
         self.operators['pt']=OperatorList()
-        buff=self.generator.operators
-        table=self.generator.table if self.nspin==2 else subset(self.generator.table,mask=lambda index: True if index.spin==0 else False)
-        for opt in buff:
-            if norm(opt.icoords)>RZERO:
-                if opt.indices[1] in table:
-                    self.operators['pt'].append(opt)
-            else:
-                self.operators['h'].append(opt)
-        if not self.weiss is None:
-            buff=self.weiss.operators
-            for opt in buff:
-                if norm(opt.icoords)>RZERO:
-                    if opt.indices[1] in table:
-                        self.operators['pt'].append(opt*(-1))
-                else:
-                    self.operators['h'].append(opt)
+        table=self.generator['pt'].table if self.nspin==2 else subset(self.generators['pt'].table,mask=lambda index: True if index.spin==0 else False)
+        for opt in self.generators['pt'].operators:
+            if opt.indices[1] in table: self.operators['pt'].append(opt)
 
     def set_operators_cell_single_particle(self):
         self.operators['csp']=OperatorList()
-        table=self.ctable if self.nspin==2 else subset(self.ctable,mask=lambda index: True if index.spin==0 else False)
+        table=Table(self.cell.indices(nambu=self.nambu)) if self.nspin==2 else subset(Table(self.cell.indices(nambu=self.nambu)),mask=lambda index: True if index.spin==0 else False)
         for index,seq in table.iteritems():
             if isinstance(index,Index): 
                 self.operators['csp'].append(E_Linear(1,indices=[index],rcoords=[self.cell.points[index.site].rcoord],icoords=[self.cell.points[index.site].icoord],seqs=[seq]))

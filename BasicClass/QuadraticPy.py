@@ -178,6 +178,21 @@ class QuadraticList(list):
             raise ValueError('QuadraticList "+" error: the other parameter must be an instance of Quadratic or QuadraticList.')
         return result
 
+    def __mul__(self,other):
+        '''
+        Overloaded operator(*), which supports the left multiplication with a scalar.
+        '''
+        result=QuadraticList()
+        for obj in self:
+            result.append(obj*other)
+        return result
+
+    def __rmul__(self,other):
+        '''
+        Overloaded operator(*), which supports the right multiplication with a scalar.
+        '''
+        return self.__mul__(other)
+
     def mesh(self,bond,half,mask=None,dtype=complex128):
         '''
         Generate the mesh of all quadratic terms defined on a bond.

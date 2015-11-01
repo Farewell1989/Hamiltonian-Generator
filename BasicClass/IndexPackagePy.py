@@ -77,7 +77,7 @@ class IndexPackage:
     
     def __mul__(self,other):
         '''
-        Overloaded operator(*), which supports the multiplication of an IndexPackage instance with an IndexPackage/IndexPackageList instance.
+        Overloaded operator(*), which supports the multiplication of an IndexPackage instance with an IndexPackage/IndexPackageList instance or a scalar.
         '''
         result=IndexPackageList()
         if isinstance(other,IndexPackage) or type(other)==int or type(other)==long or type(other)==float or type(other)==complex:
@@ -124,7 +124,7 @@ class IndexPackageList(list):
     
     def __mul__(self,other):
         '''
-        Overloaded operator(*), which supports the multiplication of an IndexPackageList instance with an IndexPackage/IndexPackageList instance.
+        Overloaded operator(*), which supports the multiplication of an IndexPackageList instance with an IndexPackage/IndexPackageList instance or a scalar.
         '''
         result=IndexPackageList()
         if isinstance(other,IndexPackage) or isinstance(other,IndexPackageList) or type(other)==int or type(other)==long or type(other)==float or type(other)==complex:

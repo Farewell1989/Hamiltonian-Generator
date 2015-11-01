@@ -20,15 +20,18 @@ class ONR(Engine):
     4) mu: the chemical potential of the system;
     5) basis: the occupation number basis of the system;
     6) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no; 
-    7) generator: the operator generator;
-    8) operators: a dict containing different groups of operators for diverse tasks, which generally has two entries:
+    7) lattice: the lattice of the system;
+    8) terms: the terms of the system;
+    9) generators: a dict containing the needed operator generators, which generally has only one entry:
+        (1) entry 'h' is the generator for the whole Hamiltonian;
+    10) operators: a dict containing different groups of operators for diverse tasks, which generally has two entries:
         (1) entry 'h' includes "half" the operators of the Hamiltonian, and
         (2) entry 'sp' includes all the single-particle operators;
-    9) matrix: the sparse matrix representation of the system;
-    10) cache: the cache during the process of calculation.
+    11) matrix: the sparse matrix representation of the system;
+    12) cache: the cache during the process of calculation.
     '''
 
-    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,generator=None,**karg):
+    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,lattice=None,terms=None,**karg):
         self.name=Name(prefix=name,suffix=self.__class__.__name__)
         self.ensemble=ensemble
         self.filling=filling
@@ -38,13 +41,13 @@ class ONR(Engine):
         elif self.ensemble.lower()=='g':
             self.name['mu']=self.mu
         self.basis=basis
-        if basis.basis_type=='ES':
-            self.nspin=nspin
-        else:
-            self.nspin=2
-        self.generator=generator
-        self.name.update(self.generator.parameters['const'])
-        self.name.update(self.generator.parameters['alter'])
+        self.nspin=nspin if basis.basis_type=='ES' else 2
+        self.lattice=lattice
+        self.terms=terms
+        self.generators={}
+        self.generators['h']=Generator(bonds=lattice.bonds,table=Table(lattice.indices(nambu=False)),terms=terms,nambu=False,half=True)
+        self.name.update(self.generators['h'].parameters['const'])
+        self.name.update(self.generators['h'].parameters['alter'])
         self.operators={}
         self.set_operators()
         self.cache={}
@@ -60,13 +63,13 @@ class ONR(Engine):
         self.set_operators_single_particle()
 
     def set_operators_hamiltonian(self):
-        self.operators['h']=self.generator.operators
+        self.operators['h']=self.generators['h'].operators
 
     def set_operators_single_particle(self):
         self.operators['sp']=OperatorList()
-        table=self.generator.table if self.nspin==2 else subset(self.generator.table,mask=lambda index: True if index.spin==0 else False)
+        table=self.generators['h'].table if self.nspin==2 else subset(self.generators['h'].table,mask=lambda index: True if index.spin==0 else False)
         for index,sequence in table.iteritems():
-            if isinstance(index,Index):self.operators['sp'].append(E_Linear(1,indices=[index],rcoords=[self.generator.lattice.points[index.site].rcoord],icoords=[self.generator.lattice.points[index.site].icoord],seqs=[sequence]))
+            if isinstance(index,Index):self.operators['sp'].append(E_Linear(1,indices=[index],rcoords=[self.lattice.points[index.site].rcoord],icoords=[self.lattice.points[index.site].icoord],seqs=[sequence]))
         self.operators['sp'].sort(key=lambda operator: operator.seqs[0])
 
     def set_matrix(self):

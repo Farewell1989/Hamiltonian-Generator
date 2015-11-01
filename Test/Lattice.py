@@ -1,9 +1,9 @@
 from BasicClass.LatticePy import *
 import time
 def test_lattice():
-    #test_lattice_body() 
-    #test_lattice_indices()
-    test_super_lattice()   
+    test_lattice_body() 
+    test_lattice_indices()
+    #test_super_lattice()   
     
 def test_lattice_body():
     p1=Point(site=0,norbital=2,nspin=3,nnambu=2,rcoord=[0.0,0.0],icoord=[0,0])
@@ -38,7 +38,7 @@ def test_super_lattice():
     a2=array([0.0,2.0])
     a=SuperLattice(
         name='Super',
-        sub_lattices=[Lattice(name='sub'+'0' if i<10 else ''+str(i),points=points_shifted(points,a1*i,scope='sub'+'0' if i<10 else ''+str(i))) for i in xrange(m)],
+        sublattices=[Lattice(name='sub'+'0' if i<10 else ''+str(i),points=points_shifted(points,a1*i,scope='sub'+'0' if i<10 else ''+str(i))) for i in xrange(m)],
         vectors=[a1*m,a2],
         nneighbour=2
         )

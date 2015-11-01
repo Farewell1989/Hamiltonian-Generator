@@ -16,12 +16,13 @@ def test_vca():
             #basis=      BasisE((2*m*n,m*n)),
             nspin=      1,
             cell=       Lattice(name='WG',points=[p1],vectors=[a1,a2]),
-            generator=  Generator(
-                lattice=    Lattice(name='WG'+str(m)+str(n),points=[p1],translations=[(a1,m),(a2,n)],vectors=[a1*m,a2*n]),
-                terms=[     Hopping('t',t,neighbour=1),
-                            Hubbard('U',[U])
-                            ]
-                )
+            lattice=    Lattice(name='WG'+str(m)+str(n),points=[p1],translations=[(a1,m),(a2,n)],vectors=[a1*m,a2*n]),
+            terms=[     Hopping('t',t,neighbour=1),
+                        Hubbard('U',[U])
+                        ],
+            nambu=      False,
+            weiss=[     Onsite('afm',0.1,indexpackages=sigmaz('sp'),amplitude=lambda bond: 1 if bond.spoint.site in (0,3) else -1)
+                        ]
             )
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
     a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
