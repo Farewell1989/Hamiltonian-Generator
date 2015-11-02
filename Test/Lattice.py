@@ -2,7 +2,7 @@ from BasicClass.LatticePy import *
 import time
 def test_lattice():
     test_lattice_body() 
-    test_lattice_indices()
+    test_lattice_table()
     #test_super_lattice()   
     
 def test_lattice_body():
@@ -21,11 +21,11 @@ def test_lattice_body():
     print etime-stime
     b.plot(show=True)
 
-def test_lattice_indices():
+def test_lattice_table():
     p1=Point(site=0,norbital=2,nspin=2,nnambu=2,rcoord=[0.0,0.0],icoord=[0.0,0.0])
     p2=Point(site=1,norbital=2,nspin=2,nnambu=2,rcoord=[1.0,0.0],icoord=[0.0,0.0])
     a=Lattice('C',[p1,p2],nneighbour=2)
-    print a.indices(nambu=True)
+    print a.table(nambu=True)
 
 def test_super_lattice():
     m=20

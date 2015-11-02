@@ -24,7 +24,7 @@ class TBA(Engine):
         self.mu=mu
         self.lattice=lattice
         self.terms=terms
-        self.generator=Generator(bonds=lattice.bonds,table=Table(lattice.indices(nambu)),terms=terms,nambu=nambu,half=True)
+        self.generator=Generator(bonds=lattice.bonds,table=lattice.table(nambu),terms=terms,nambu=nambu,half=True)
         self.name.update(self.generator.parameters['const'])
 
     def matrix(self,k=[],**karg):

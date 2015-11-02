@@ -1,5 +1,4 @@
 from ConstantPy import RZERO
-from BasicClass.TablePy import *
 from BasicClass.OperatorPy import *
 from numpy.linalg import norm
 class Generator:

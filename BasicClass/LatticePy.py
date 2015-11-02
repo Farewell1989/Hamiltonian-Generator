@@ -1,6 +1,7 @@
 from IndexPy import *
 from BasicGeometryPy import *
 from BondPy import *
+from TablePy import *
 from numpy.linalg import inv
 from itertools import product
 import matplotlib.pyplot as plt
@@ -78,7 +79,7 @@ class Lattice:
             plt.savefig(self.name+'.png')
         plt.close()
 
-    def indices(self,nambu=False):
+    def table(self,nambu=False):
         '''
         Return all the allowed indices that can be defined on this lattice.
         '''
@@ -91,7 +92,7 @@ class Lattice:
                             result.append(Index(scope=self.name,site=point.site,orbital=orbital,spin=spin,nambu=buff))
                     else:
                         result.append(Index(scope=self.name,site=point.site,orbital=orbital,spin=spin,nambu=ANNIHILATION))
-        return sorted(result,key=lambda value: value.to_tuple(indication='p'+self.priority))
+        return Table(sorted(result,key=lambda value: value.to_tuple(indication='p'+self.priority)))
 
 def bonds(points,vectors=None,nneighbour=1):
     '''

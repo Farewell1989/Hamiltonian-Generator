@@ -22,7 +22,7 @@ def test_vcacct():
         filling=    0.5,
         mu=         U/2,
         nspin=      1,
-        cell=       Lattice(name='Hexagon',points=[p1,p3],vectors=[a1,a2]),
+        cell=       Lattice(name='Hexagon',points=[p1,p2],vectors=[a1,a2]),
         lattice=    SuperLattice(name='H4_concat',sublattices=[PA,PB],vectors=[b1,b2]),
         subsystems= [
                     (BasisE(up=(4,2),down=(4,2)),PA),
@@ -34,5 +34,5 @@ def test_vcacct():
                     ],
         nambu=      False
         )
-    a.generator.lattice.plot()
-    a.cell.plot()
+    print a.name
+    print a.operators['pt']

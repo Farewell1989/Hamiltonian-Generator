@@ -11,7 +11,7 @@ class Term(object):
     def __init__(self,mode,tag,value,modulate=None):
         self.mode=mode
         self.tag=tag
-        self.value=array(value)
+        self.value=value
         if not modulate is None:
             self.modulate=modulate
 
@@ -20,7 +20,10 @@ class Term(object):
         Overloaded operator(*) which supports the left multiplication with a scalar.
         '''
         result=deepcopy(self)
-        result.value*=other
+        if isinstance(result.value,list):
+            result.value=[value*other for value in result.value]
+        else:
+            result.value*=other
         return result
  
     def __rmul__(self,other):

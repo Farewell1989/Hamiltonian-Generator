@@ -47,7 +47,7 @@ class ONR(Engine):
         self.terms=terms
         self.nambu=nambu
         self.generators={}
-        self.generators['h']=Generator(bonds=lattice.bonds,table=Table(lattice.indices(nambu=False)),terms=terms,nambu=False,half=True)
+        self.generators['h']=Generator(bonds=lattice.bonds,table=lattice.table(nambu=False),terms=terms,nambu=False,half=True)
         self.name.update(self.generators['h'].parameters['const'])
         self.name.update(self.generators['h'].parameters['alter'])
         self.operators={}
@@ -69,7 +69,7 @@ class ONR(Engine):
 
     def set_operators_single_particle(self):
         self.operators['sp']=OperatorList()
-        table=Table(self.lattice.indices(nambu=self.nambu)) if self.nspin==2 else subset(Table(self.lattice.indices(nambu=self.nambu)),mask=lambda index: True if index.spin==0 else False)
+        table=self.lattice.table(nambu=self.nambu) if self.nspin==2 else subset(self.lattice.table(nambu=self.nambu),mask=lambda index: True if index.spin==0 else False)
         for index,sequence in table.iteritems():
             if isinstance(index,Index):self.operators['sp'].append(E_Linear(1,indices=[index],rcoords=[self.lattice.points[index.site].rcoord],icoords=[self.lattice.points[index.site].icoord],seqs=[sequence]))
         self.operators['sp'].sort(key=lambda operator: operator.seqs[0])

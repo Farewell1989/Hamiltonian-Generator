@@ -48,14 +48,14 @@ class VCA(ONR):
         self.generators={}
         self.generators['h']=Generator(
                     bonds=      [bond for bond in lattice.bonds if bond.is_intra_cell()],
-                    table=      Table(lattice.indices(nambu=False)),
+                    table=      lattice.table(nambu=False),
                     terms=      terms if weiss is None else terms+weiss,
                     nambu=      False,
                     half=       True
                     )
         self.generators['pt']=Generator(
                     bonds=      [bond for bond in lattice.bonds if not bond.is_intra_cell()],
-                    table=      Table(lattice.indices(nambu=nambu)),
+                    table=      lattice.table(nambu=nambu),
                     terms=      terms if weiss is None else terms+[term*(-1) for term in weiss],
                     nambu=      nambu,
                     half=       True
@@ -90,11 +90,20 @@ class VCA(ONR):
 
     def set_operators_cell_single_particle(self):
         self.operators['csp']=OperatorList()
-        table=Table(self.cell.indices(nambu=self.nambu)) if self.nspin==2 else subset(Table(self.cell.indices(nambu=self.nambu)),mask=lambda index: True if index.spin==0 else False)
+        table=self.cell.table(nambu=self.nambu) if self.nspin==2 else subset(self.cell.table(nambu=self.nambu),mask=lambda index: True if index.spin==0 else False)
         for index,seq in table.iteritems():
             if isinstance(index,Index): 
                 self.operators['csp'].append(E_Linear(1,indices=[index],rcoords=[self.cell.points[index.site].rcoord],icoords=[self.cell.points[index.site].icoord],seqs=[seq]))
         self.operators['csp'].sort(key=lambda opt: opt.seqs[0])
+
+    def update(self,**karg):
+        '''
+        Update the alterable operators, such as the weiss terms.
+        '''
+        for generator in self.generators.itervalues():
+            generator.update(**karg)
+        self.set_operators_hamiltonian()
+        self.set_operators_perturbation()
 
     def set_clmap(self):
         '''
