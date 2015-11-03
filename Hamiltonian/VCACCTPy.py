@@ -19,7 +19,7 @@ class VCACCT(VCA):
         self.generators={}
         self.generators['pt']=Generator(
                     bonds=      [bond for bond in lattice.bonds if not bond.is_intra_cell() or bond.spoint.scope!=bond.epoint.scope],
-                    table=      Table(lattice.indices(nambu=nambu)),
+                    table=      lattice.table(nambu=nambu),
                     terms=      terms if weiss is None else terms+[term*(-1) for term in weiss],
                     nambu=      nambu,
                     half=       True

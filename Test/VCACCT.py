@@ -34,5 +34,6 @@ def test_vcacct():
                     ],
         nambu=      False
         )
+    a.lattice.plot()
     print a.name
     print a.operators['pt']

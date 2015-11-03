@@ -4,13 +4,14 @@ from BondPy import *
 from TablePy import *
 from numpy.linalg import inv
 from itertools import product
+import warnings
 import matplotlib.pyplot as plt
 
-class Lattice:
+class Lattice(object):
     '''
     The lattice class provides a unified description of 1D, quasi 1D, 2D, quasi 2D and 3D lattice systems. It has the following attributes:
     1) name: a string representing the lattice's name;
-    2) points: a list representing the lattice points in a unit cell;
+    2) points: a dict representing the lattice points in a unit cell;
     3) vectors: a list representing the translation vectors;
     4) reciprocals: a list representing the dual translation vectors;
     5) nneighbour: a number representing the highest order of neighbours;
@@ -26,14 +27,19 @@ class Lattice:
         In both cases, the nneighbour attribute can be explicitly assigned while the reciprocals and bonds attributes will be automatically generated.
         '''
         self.name=name
-        self.points=points
-        if not translations is None:
+        self.points={}
+        for point in points:
+            self.points[name+str(point.site)]=point if name==point.scope else deepcopy(point)
+            if name!=point.scope:
+                self.points[name+str(point.site)].scope=name
+        if translations is not None:
             for (a,m) in translations:
-                npoints=len(self.points)
-                for point in self.points[:]:
+                ps=list(self.points.itervalues())
+                inc=max([point.site for point in ps])+1
+                for point in ps[:]:
                     for i in xrange(1,m):
-                        self.points.append(Point(site=point.site+i*npoints,rcoord=point.rcoord+i*a,icoord=point.icoord,atom=point.atom,norbital=point.norbital,nspin=point.nspin,nnambu=point.nnambu,scope=point.scope))
-            self.points.sort(key=lambda point : point.site)
+                        site=point.site+i*inc
+                        self.points[name+str(site)]=Point(site=site,rcoord=point.rcoord+i*a,icoord=point.icoord,atom=point.atom,norbital=point.norbital,nspin=point.nspin,nnambu=point.nnambu,scope=point.scope)
         self.vectors=vectors
         self.reciprocals=reciprocals(self.vectors)
         self.nneighbour=nneighbour
@@ -84,14 +90,14 @@ class Lattice:
         Return all the allowed indices that can be defined on this lattice.
         '''
         result=[]
-        for point in self.points:
+        for point in self.points.itervalues():
             for orbital in xrange(point.norbital):
                 for spin in xrange(point.nspin):
                     if nambu:
                         for buff in xrange(point.nnambu):
-                            result.append(Index(scope=self.name,site=point.site,orbital=orbital,spin=spin,nambu=buff))
+                            result.append(Index(scope=point.scope,site=point.site,orbital=orbital,spin=spin,nambu=buff))
                     else:
-                        result.append(Index(scope=self.name,site=point.site,orbital=orbital,spin=spin,nambu=ANNIHILATION))
+                        result.append(Index(scope=point.scope,site=point.site,orbital=orbital,spin=spin,nambu=ANNIHILATION))
         return Table(sorted(result,key=lambda value: value.to_tuple(indication='p'+self.priority)))
 
 def bonds(points,vectors=None,nneighbour=1):
@@ -100,8 +106,7 @@ def bonds(points,vectors=None,nneighbour=1):
     Note: the input points will be included in the returned list as the zero-th neighbour bonds.
     '''
     nvectors=len(vectors)
-    npoints=len(points)
-    ndim=points[0].rcoord.shape[0]
+    ndim=list(points.itervalues())[0].rcoord.shape[0]
     result=[[]]
     if nvectors==0:
         sup1=0;sup2=0;sup3=0
@@ -121,8 +126,8 @@ def bonds(points,vectors=None,nneighbour=1):
         if nvectors>=1: disp=vectors[0]*i
         if nvectors>=2: disp+=vectors[1]*j
         if nvectors>=3: disp+=vectors[2]*k
-        for m in xrange(npoints):
-            for n in xrange(npoints):
+        for m in points.iterkeys():
+            for n in points.iterkeys():
                 if i==0 and j==0 and k==0 and n>m: continue
                 coord1=points[m].rcoord
                 coord2=points[n].rcoord+disp
@@ -184,11 +189,18 @@ def reciprocals(vectors):
 
 def SuperLattice(name,sublattices,vectors=[],nneighbour=1,priority='NSCO'):
     '''
-    This function returns the combination of two or more lattices.
+    This function returns the union of sublattices.
     '''
-    result=Lattice(name=name,points=deepcopy([point for lattice in sublattices for point in lattice.points]),vectors=vectors,nneighbour=nneighbour,priority=priority)
-    for i in xrange(len(result.points)):
-        result.points[i].site=i
+    result=object.__new__(Lattice)
+    result.name=name
+    result.points={}
+    for lattice in sublattices:
+        result.points.update(lattice.points)
+    result.vectors=vectors
+    result.reciprocals=reciprocals(vectors)
+    result.nneighbour=nneighbour
+    result.bonds=[b for bs in bonds(result.points,vectors,nneighbour) for b in bs]
+    result.priority=priority
     result.sublattices=sublattices
     return result
 

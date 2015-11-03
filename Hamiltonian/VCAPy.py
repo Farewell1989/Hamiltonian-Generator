@@ -93,7 +93,7 @@ class VCA(ONR):
         table=self.cell.table(nambu=self.nambu) if self.nspin==2 else subset(self.cell.table(nambu=self.nambu),mask=lambda index: True if index.spin==0 else False)
         for index,seq in table.iteritems():
             if isinstance(index,Index): 
-                self.operators['csp'].append(E_Linear(1,indices=[index],rcoords=[self.cell.points[index.site].rcoord],icoords=[self.cell.points[index.site].icoord],seqs=[seq]))
+                self.operators['csp'].append(E_Linear(1,indices=[index],rcoords=[self.cell.points[index.scope+str(index.site)].rcoord],icoords=[self.cell.points[index.scope+str(index.site)].icoord],seqs=[seq]))
         self.operators['csp'].sort(key=lambda opt: opt.seqs[0])
 
     def update(self,**karg):
