@@ -7,7 +7,7 @@ subroutine gf_contract(ks,gf_buff,seqs,coords,gf_vca,ndim,ngf,ngf_vca,nclmap)
     complex(8),intent(out),dimension(ngf_vca,ngf_vca) :: gf_vca
     integer :: i,j,k,l,h
     real(8),dimension(ndim) :: coords_buff
-    gf_vca=(0.0_8,1.0_8)
+    gf_vca=(0.0_8,0.0_8)
     do i=1,ngf_vca
         do k=1,nclmap
             do j=1,ngf_vca

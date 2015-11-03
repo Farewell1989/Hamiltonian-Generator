@@ -20,11 +20,11 @@ def test_vca():
             terms=[     Hopping('t',t,neighbour=1),
                         Hubbard('U',[U])
                         ],
-            nambu=      False,
-            weiss=[     Onsite('afm',0.1,indexpackages=sigmaz('sp'),amplitude=lambda bond: 1 if bond.spoint.site in (0,3) else -1)
-                        ]
+            nambu=      False
+            #weiss=[     Onsite('afm',0.1,indexpackages=sigmaz('sp'),amplitude=lambda bond: 1 if bond.spoint.site in (0,3) else -1)
+            #            ]
             )
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
-    a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
+    a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-6,emax=6,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
     a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
     a.runapps()

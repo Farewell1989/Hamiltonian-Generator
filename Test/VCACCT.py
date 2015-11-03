@@ -22,11 +22,11 @@ def test_vcacct():
         filling=    0.5,
         mu=         U/2,
         nspin=      1,
-        cell=       Lattice(name='Hexagon',points=[p1,p2],vectors=[a1,a2]),
+        cell=       Lattice(name='Hexagon',points=[p1,p3],vectors=[a1,a2]),
         lattice=    SuperLattice(name='H4_concat',sublattices=[PA,PB],vectors=[b1,b2]),
         subsystems= [
-                    (BasisE(up=(4,2),down=(4,2)),PA),
-                    (BasisE(up=(4,2),down=(4,2)),PB)
+                    {'basis':BasisE(up=(4,2),down=(4,2)),'lattice':PA},
+                    {'basis':BasisE(up=(4,2),down=(4,2)),'lattice':PB}
                     ],
         terms=      [
                     Hopping('t1',t1),
@@ -34,6 +34,7 @@ def test_vcacct():
                     ],
         nambu=      False
         )
-    a.lattice.plot()
-    print a.name
-    print a.operators['pt']
+    a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=VCACCTGFC))
+    a.addapps('DOS',DOS(BZ=hexagon_bz(nk=50),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
+    a.addapps('EB',EB(path=hexagon_gkm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
+    a.runapps()

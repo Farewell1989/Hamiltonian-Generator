@@ -1,4 +1,5 @@
 from VCAPy import *
+from scipy.linalg import block_diag
 class VCACCT(VCA):
     '''
     '''
@@ -16,34 +17,38 @@ class VCACCT(VCA):
         self.terms=terms
         self.weiss=weiss
         self.nambu=nambu
+        self.subsystems={}
+        for i,subsystem in enumerate(subsystems):
+            sub_filling=filling if 'filling' not in subsystem else subsystem['filling']
+            sub_mu=mu if 'mu' not in subsystem else subsytem['mu']
+            sub_basis=subsystem['basis']
+            sub_lattice=subsystem['lattice']
+            self.subsystems[sub_lattice.name]=ONR(
+                    name=       sub_lattice.name,
+                    ensemble=   ensemble,
+                    filling=    sub_filling,
+                    mu=         sub_mu,
+                    basis=      sub_basis,
+                    nspin=      nspin,
+                    lattice=    sub_lattice,
+                    terms=      terms if weiss is None else terms+weiss,
+                    nambu=      nambu,
+                    **karg
+                )
+            if i==0: flag=self.subsystems[sub_lattice.name].nspin
+            if flag!=self.subsystems[sub_lattice.name].nspin:
+                raise ValueError("VCACCT init error: all the subsystems must have the same nspin.")
+        self.nspin=flag
         self.generators={}
         self.generators['pt']=Generator(
                     bonds=      [bond for bond in lattice.bonds if not bond.is_intra_cell() or bond.spoint.scope!=bond.epoint.scope],
-                    table=      lattice.table(nambu=nambu),
+                    table=      lattice.table(nambu=nambu) if self.nspin==2 else subset(lattice.table(nambu=nambu),mask=lambda index: True if index.spin==0 else False),
                     terms=      terms if weiss is None else terms+[term*(-1) for term in weiss],
                     nambu=      nambu,
                     half=       True
                     )
         self.name.update(self.generators['pt'].parameters['const'])
         self.name.update(self.generators['pt'].parameters['alter'])
-        self.subsystems={}
-        for i,(basis,lattice) in enumerate(subsystems):
-            self.subsystems[lattice.name]=ONR(
-                    name=       lattice.name,
-                    ensemble=   ensemble,
-                    filling=    filling,
-                    mu=         mu,
-                    basis=      basis,
-                    nspin=      nspin,
-                    lattice=    lattice,
-                    terms=      terms if weiss is None else terms+weiss,
-                    nambu=      nambu,
-                    **karg
-                )
-            if i==0: flag=self.subsystems[lattice.name].nspin
-            if flag!=self.subsystems[lattice.name].nspin:
-                raise ValueError("VCACCT init error: all the subsystems must have the same nspin.")
-        self.nspin=flag
         self.operators={}
         self.set_operators()
         self.clmap={}
@@ -56,13 +61,17 @@ class VCACCT(VCA):
         self.set_operators_cell_single_particle()
 
     def gf(self,omega=None):
-        pass
+        buff=[]
+        for sub_onr in [self.subsystems[key] for key in sorted(list(self.subsystems.iterkeys()))]:
+            buff.append(sub_onr.gf(omega))
+        return block_diag(*buff)
 
 def VCACCTGFC(engine,app):
-    pass
-
-def VCACCTGF(engine,app):
-    pass
+    buff=deepcopy(app)
+    buff.run=ONRGFC
+    for sub_onr in engine.subsystems.itervalues():
+        sub_onr.addapps('GFC',buff)
+        sub_onr.runapps('GFC')
 
 
 

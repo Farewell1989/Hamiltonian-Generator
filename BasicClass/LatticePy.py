@@ -4,7 +4,6 @@ from BondPy import *
 from TablePy import *
 from numpy.linalg import inv
 from itertools import product
-import warnings
 import matplotlib.pyplot as plt
 
 class Lattice(object):

@@ -55,7 +55,7 @@ class VCA(ONR):
                     )
         self.generators['pt']=Generator(
                     bonds=      [bond for bond in lattice.bonds if not bond.is_intra_cell()],
-                    table=      lattice.table(nambu=nambu),
+                    table=      lattice.table(nambu=nambu) if self.nspin==2 else subset(lattice.table(nambu=nambu),mask=lambda index: True if index.spin==0 else False),
                     terms=      terms if weiss is None else terms+[term*(-1) for term in weiss],
                     nambu=      nambu,
                     half=       True
@@ -84,7 +84,7 @@ class VCA(ONR):
 
     def set_operators_perturbation(self):
         self.operators['pt']=OperatorList()
-        table=self.generator['pt'].table if self.nspin==2 else subset(self.generators['pt'].table,mask=lambda index: True if index.spin==0 else False)
+        table=self.generators['pt'].table 
         for opt in self.generators['pt'].operators:
             if opt.indices[1] in table: self.operators['pt'].append(opt)
 
