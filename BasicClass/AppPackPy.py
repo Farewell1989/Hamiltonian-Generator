@@ -23,6 +23,15 @@ class DOS(App):
         self.emin=emin
         self.emax=emax
 
+class GP(App):
+    '''
+    Grand potential.
+    '''
+    def __init__(self,BZ=None,e1=5.0,e2=50.0,deg1=64,deg2=64,deg3=64,n=20,**karg):
+        self.BZ=BZ
+        self.e_degs=[(0,e1,deg1),(e1,e2,deg2),(e2,e2*n,deg3)]
+        self.gp=0
+
 class GFC(App):
     '''
     The coefficients of Green's functions.

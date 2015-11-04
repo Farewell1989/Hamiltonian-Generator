@@ -1,6 +1,8 @@
 from ONRPy import *
 from BasicClass.BaseSpacePy import *
 from VCA_Fortran import *
+from BasicAlgorithm.IntegrationPy import *
+from numpy.linalg import det
 class VCA(ONR):
     '''
     The class VCA implements the algorithm of the variational cluster approximation of an electron system. Apart from those inherited from the class Engine, it has the following attributes:
@@ -15,9 +17,10 @@ class VCA(ONR):
     9) terms: the terms of the system;
     10) weiss: the Weiss terms added to the system;
     11) nambu: a flag to tag whether pairing terms are involved;
-    12) generators: a dict containing the needed operator generators, which generally has two entries:
+    12) generators: a dict containing the needed operator generators, which generally has three entries:
         (1) entry 'h' is the generator for the cluster Hamiltonian including weiss terms;
-        (2) entry 'pt' is the generator for the perturbation terms including weiss ones;
+        (2) entry 'pt_h' is the generator for the perturbation terms coming from the original Hamiltonian;
+        (3) entry 'pt_w' is the generator for the perturbation terms coming from the weiss ones;
     13) operators: a dict containing different groups of operators for diverse tasks, which generally has four entries:
         (1) entry 'h' includes "half" the operators of the Hamiltonian intra the cluster,
         (2) entry 'pt' includes "half" the operators of the perturbation terms inter the clusters,
@@ -53,10 +56,17 @@ class VCA(ONR):
                     nambu=      False,
                     half=       True
                     )
-        self.generators['pt']=Generator(
+        self.generators['pt_h']=Generator(
                     bonds=      [bond for bond in lattice.bonds if not bond.is_intra_cell()],
                     table=      lattice.table(nambu=nambu) if self.nspin==2 else subset(lattice.table(nambu=nambu),mask=lambda index: True if index.spin==0 else False),
-                    terms=      terms if weiss is None else terms+[term*(-1) for term in weiss],
+                    terms=      [term for term in terms if isinstance(term,Quadratic)],
+                    nambu=      nambu,
+                    half=       True
+                    )
+        self.generators['pt_w']=Generator(
+                    bonds=      [bond for bond in lattice.bonds if bond.is_intra_cell()],
+                    table=      lattice.table(nambu=nambu) if self.nspin==2 else subset(lattice.table(nambu=nambu),mask=lambda index: True if index.spin==0 else False),
+                    terms=      None if weiss is None else [term*(-1) for term in weiss],
                     nambu=      nambu,
                     half=       True
                     )
@@ -84,8 +94,10 @@ class VCA(ONR):
 
     def set_operators_perturbation(self):
         self.operators['pt']=OperatorList()
-        table=self.generators['pt'].table 
-        for opt in self.generators['pt'].operators:
+        table=self.generators['pt_h'].table 
+        for opt in self.generators['pt_h'].operators:
+            if opt.indices[1] in table: self.operators['pt'].append(opt)
+        for opt in self.generators['pt_w'].operators:
             if opt.indices[1] in table: self.operators['pt'].append(opt)
 
     def set_operators_cell_single_particle(self):
@@ -239,3 +251,19 @@ def VCADOS(engine,app):
         else:
             plt.savefig(engine.dout+'/'+engine.name.full_name+'_DOS.png')
         plt.close()
+
+def VCAGP(engine,app):
+    engine.cache.pop('pt_mesh',None)
+    ngf=len(engine.operators['sp'])
+    app.gp=0
+    for a,b,deg in app.e_degs:
+        nodes,weights=integration_knots_weights(a,b,deg,method='legendre')
+        buff=zeros(deg)
+        for i,node in enumerate(nodes):
+            buff[i]=sum(log(abs(det(eye(ngf)-dot(engine.pt_mesh(app.BZ.mesh),engine.gf(omega=node*1j+engine.mu))))))
+        app.gp+=dot(weights,buff)
+    app.gp=(engine.apps['GFC'].gse-2/engine.nspin*app.gp/(pi*app.BZ.rank))/engine.clmap['seqs'].shape[1]
+    app.gp=app.gp+real(sum(trace(engine.pt_mesh(app.BZ.mesh),axis1=1,axis2=2))/app.BZ.rank/engine.clmap['seqs'].shape[1])
+    app.gp=app.gp-engine.mu*engine.filling*len(engine.operators['csp'])*2/engine.nspin
+    app.gp=app.gp/len(engine.cell.points)
+    print 'gp:',app.gp
