@@ -6,41 +6,39 @@ from numpy.linalg import det
 class VCA(ONR):
     '''
     The class VCA implements the algorithm of the variational cluster approximation of an electron system. Apart from those inherited from the class Engine, it has the following attributes:
-    1) name: the name of the system;
-    2) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
-    3) filling: the filling factor of the system;
-    4) mu: the chemical potential of the system;
-    5) basis: the occupation number basis of the system;
-    6) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no;
-    7) cell : the unit cell of the system;
-    8) lattice: the cluster of the system;
-    9) terms: the terms of the system;
-    10) weiss: the Weiss terms added to the system;
-    11) nambu: a flag to tag whether pairing terms are involved;
-    12) generators: a dict containing the needed operator generators, which generally has three entries:
+    1) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
+    2) filling: the filling factor of the system;
+    3) mu: the chemical potential of the system;
+    4) basis: the occupation number basis of the system;
+    5) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no;
+    6) cell : the unit cell of the system;
+    7) lattice: the cluster of the system;
+    8) terms: the terms of the system;
+    9) weiss: the Weiss terms added to the system;
+    10) nambu: a flag to tag whether pairing terms are involved;
+    11) generators: a dict containing the needed operator generators, which generally has three entries:
         (1) entry 'h' is the generator for the cluster Hamiltonian including weiss terms;
         (2) entry 'pt_h' is the generator for the perturbation terms coming from the original Hamiltonian;
         (3) entry 'pt_w' is the generator for the perturbation terms coming from the weiss ones;
-    13) operators: a dict containing different groups of operators for diverse tasks, which generally has four entries:
+    12) operators: a dict containing different groups of operators for diverse tasks, which generally has four entries:
         (1) entry 'h' includes "half" the operators of the Hamiltonian intra the cluster,
         (2) entry 'pt' includes "half" the operators of the perturbation terms inter the clusters,
         (3) entry 'sp' includes all the single-particle operators intra the cluster, and
         (4) entry 'csp' includes all the single-particle operators intra the unit cell;
-    14) clmap: a dict containing the information needed to restore the translation symmetry broken by the choosing of the clusters, which has two entries:
+    13) clmap: a dict containing the information needed to restore the translation symmetry broken by the choosing of the clusters, which has two entries:
         (1) 'seqs': a two dimensinal array whose element[i,j] represents the index sequence of the j-th single-particle operator within the cluster which should correspond to the i-th single-particle operator within the unit cell after the restoration of the translation symmetry;
         (2) 'coords': a three dimensinal array whose element[i,j,:] represents the rcoords of the j-th single-particle operator within the cluster which should correspond to the i-th single-particle operator within the unit cell after the restoration of the translation symmetry;
-    15) matrix: the sparse matrix representation of the system;
-    16) cache: the cache during the process of calculation.
+    14) matrix: the sparse matrix representation of the system;
+    15) cache: the cache during the process of calculation.
     '''
-    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,cell=None,lattice=None,terms=None,weiss=None,nambu=False,**karg):
-        self.name=Name(prefix=name,suffix=self.__class__.__name__)
+    def __init__(self,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,cell=None,lattice=None,terms=None,weiss=None,nambu=False,**karg):
         self.ensemble=ensemble
         self.filling=filling
         self.mu=mu
         if self.ensemble.lower()=='c':
-            self.name['filling']=self.filling
+            self.name.update(const={'filling':self.filling})
         elif self.ensemble.lower()=='g':
-            self.name['mu']=self.mu
+            self.name.update(alter={'mu':self.mu})
         self.basis=basis
         self.nspin=nspin if basis.basis_type=='ES' else 2
         self.cell=cell
@@ -70,8 +68,8 @@ class VCA(ONR):
                     nambu=      nambu,
                     half=       True
                     )
-        self.name.update(self.generators['h'].parameters['const'])
-        self.name.update(self.generators['h'].parameters['alter'])
+        self.name.update(const=self.generators['h'].parameters['const'])
+        self.name.update(alter=self.generators['h'].parameters['alter'])
         self.operators={}
         self.set_operators()
         self.clmap={}
@@ -220,15 +218,15 @@ def VCAEB(engine,app):
             buff[k,0]=j
             buff[k,1]=erange[i]
             buff[k,2]=result[j,i]
-        savetxt(engine.dout+'/'+engine.name.full_name+'_EB.dat',buff)
+        savetxt(engine.dout+'/'+engine.name.full+'_EB.dat',buff)
     if app.plot:
         krange=array(xrange(app.path.rank))
-        plt.title(engine.name.full_name+'_EB')
+        plt.title(engine.name.full+'_EB')
         plt.colorbar(plt.pcolormesh(tensordot(krange,ones(app.ne),axes=0),tensordot(ones(app.path.rank),erange,axes=0),result))
         if app.show:
             plt.show()
         else:
-            plt.savefig(engine.dout+'/'+engine.name.full_name+'_EB.png')
+            plt.savefig(engine.dout+'/'+engine.name.full+'_EB.png')
         plt.close()
 
 def VCAFS(engine,app):
@@ -242,14 +240,14 @@ def VCADOS(engine,app):
         result[i,0]=omega
         result[i,1]=-2*imag(sum((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.BZ.mesh),axis1=1,axis2=2))))
     if app.save_data:
-        savetxt(engine.dout+'/'+engine.name.full_name+'_DOS.dat',result)
+        savetxt(engine.dout+'/'+engine.name.full+'_DOS.dat',result)
     if app.plot:
-        plt.title(engine.name.full_name+'_DOS')
+        plt.title(engine.name.full+'_DOS')
         plt.plot(result[:,0],result[:,1])
         if app.show:
             plt.show()
         else:
-            plt.savefig(engine.dout+'/'+engine.name.full_name+'_DOS.png')
+            plt.savefig(engine.dout+'/'+engine.name.full+'_DOS.png')
         plt.close()
 
 def VCAGP(engine,app):
@@ -267,3 +265,6 @@ def VCAGP(engine,app):
     app.gp=app.gp-engine.mu*engine.filling*len(engine.operators['csp'])*2/engine.nspin
     app.gp=app.gp/len(engine.cell.points)
     print 'gp:',app.gp
+
+def VCAGPS(engine,app):
+    pass

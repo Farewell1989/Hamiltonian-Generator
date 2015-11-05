@@ -4,9 +4,8 @@ class FLQT(TBA):
     '''
     Class FLQT deals with floquet problems.  
     '''
-    def __init__(self,name=None,filling=0,mu=0,lattice=None,terms=None,nambu=False,**karg):
+    def __init__(self,filling=0,mu=0,lattice=None,terms=None,nambu=False,**karg):
         super(FLQT,self).__init__(
-            name=       name,
             filling=    filling,
             mu=         mu,
             lattice=    lattice,
@@ -39,11 +38,11 @@ def FLQTEB(engine,app):
         result[0,1:]=angle(eig(engine.evolution(t=app.ts.mesh))[0])/app.ts.volume
         result[1,1:]=result[0,1:]
     if app.save_data:
-        savetxt(engine.dout+'/'+engine.name.full_name+'_EB.dat',result)
+        savetxt(engine.dout+'/'+engine.name.full+'_EB.dat',result)
     if app.plot:
-        plt.title(engine.name.full_name+'_EB')
+        plt.title(engine.name.full+'_EB')
         plt.plot(result[:,0],result[:,1:])
         if app.show:
             plt.show()
         else:
-            plt.savefig(engine.dout+'/'+engine.name.full_name+'_EB.png')
+            plt.savefig(engine.dout+'/'+engine.name.full+'_EB.png')

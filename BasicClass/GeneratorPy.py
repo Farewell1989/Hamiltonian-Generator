@@ -1,6 +1,7 @@
 from ConstantPy import RZERO
 from BasicClass.OperatorPy import *
 from numpy.linalg import norm
+from collections import OrderedDict
 class Generator:
     '''
     Class Generator provides methods to generate and update operators of a Hamiltonian according to the bonds of the model and the descriptions of its terms. It has the following attributes:
@@ -24,8 +25,8 @@ class Generator:
         self.set_cache()
 
     def set_parameters_and_terms(self,terms):
-        self.parameters['const']={}
-        self.parameters['alter']={}
+        self.parameters['const']=OrderedDict()
+        self.parameters['alter']=OrderedDict()
         self.terms['const']={}
         self.terms['alter']={}
         if not terms is None:

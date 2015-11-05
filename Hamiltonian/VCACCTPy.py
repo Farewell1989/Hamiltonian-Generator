@@ -3,15 +3,14 @@ from scipy.linalg import block_diag
 class VCACCT(VCA):
     '''
     '''
-    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,nspin=1,cell=None,lattice=None,subsystems=None,terms=None,weiss=None,nambu=False,**karg):
-        self.name=Name(prefix=name,suffix=self.__class__.__name__)
+    def __init__(self,ensemble='c',filling=0.5,mu=0,nspin=1,cell=None,lattice=None,subsystems=None,terms=None,weiss=None,nambu=False,**karg):
         self.ensemble=ensemble
         self.filling=filling
         self.mu=mu
         if self.ensemble.lower()=='c':
-            self.name['filling']=self.filling
+            self.name.update(const={'filling':self.filling})
         elif self.ensemble.lower()=='g':
-            self.name['mu']=self.mu
+            self.name.update(alter={'mu':self.mu})
         self.cell=cell
         self.lattice=lattice
         self.terms=terms
@@ -32,8 +31,7 @@ class VCACCT(VCA):
                     nspin=      nspin,
                     lattice=    sub_lattice,
                     terms=      terms if weiss is None else terms+weiss,
-                    nambu=      nambu,
-                    **karg
+                    nambu=      nambu
                 )
             if i==0: flag=self.subsystems[sub_lattice.name].nspin
             if flag!=self.subsystems[sub_lattice.name].nspin:
@@ -54,8 +52,8 @@ class VCACCT(VCA):
                     nambu=      nambu,
                     half=       True
                     )
-        self.name.update(self.generators['pt_h'].parameters['const'])
-        self.name.update(self.generators['pt_h'].parameters['alter'])
+        self.name.update(const=self.generators['pt_h'].parameters['const'])
+        self.name.update(alter=self.generators['pt_h'].parameters['alter'])
         self.operators={}
         self.set_operators()
         self.clmap={}

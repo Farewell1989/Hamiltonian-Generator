@@ -1,3 +1,4 @@
+from NamePy import *
 import time
 class Engine(object):
     '''
@@ -19,6 +20,12 @@ class Engine(object):
             result.dout=karg['dout']
         else:
             result.dout='.'
+        if 'name' in karg:
+            result.name=Name(prefix=karg['name'],suffix=result.__class__.__name__)
+        else:
+            result.name=Name(suffix=result.__class__.__name__)
+        if 'parameters' in karg:
+            result.name.update(const=karg['parameters'])
         result.waiting_list=[]
         result.apps={}
         return result

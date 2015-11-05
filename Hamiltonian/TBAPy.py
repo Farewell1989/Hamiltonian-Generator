@@ -7,25 +7,23 @@ import matplotlib.pyplot as plt
 class TBA(Engine):
     '''
     The TBA class provides a general algorithm to calculate physical quantities of non-interacting systems based on the tight-binding approximation. The BdG systems, i.e. phenomenological superconducting systems based on mean-field theory are also supported in a unified way. Apart from those inherited from its parent class Engine, TBA has the following attributes:
-    1) name: the name of system;
-    2) filling: the filling factor of the system;
-    3) mu: the chemical potential of the system;
-    4) lattice: the lattice of the system;
-    5) terms: the terms of the systems;
-    6) generator: the operator generator;
+    1) filling: the filling factor of the system;
+    2) mu: the chemical potential of the system;
+    3) lattice: the lattice of the system;
+    4) terms: the terms of the systems;
+    5) generator: the operator generator;
     Supported apps and the corresponding run methods include:
     1) EB (energy bands) with method TBAEB,
     2) DOS (density of states) with TBADOS.
     '''
     
-    def __init__(self,name=None,filling=0,mu=0,lattice=None,terms=None,nambu=False,**karg):
-        self.name=Name(prefix=name,suffix=self.__class__.__name__)
+    def __init__(self,filling=0,mu=0,lattice=None,terms=None,nambu=False,**karg):
         self.filling=filling
         self.mu=mu
         self.lattice=lattice
         self.terms=terms
         self.generator=Generator(bonds=lattice.bonds,table=lattice.table(nambu),terms=terms,nambu=nambu,half=True)
-        self.name.update(self.generator.parameters['const'])
+        self.name.update(const=self.generator.parameters['const'])
 
     def matrix(self,k=[],**karg):
         self.generator.update(**karg)
@@ -66,14 +64,14 @@ def TBAEB(engine,app):
         result[0,1:]=eigh(engine.matrix(),eigvals_only=True)
         result[1,1:]=result[0,1:]
     if app.save_data:
-        savetxt(engine.dout+'/'+engine.name.full_name+'_EB.dat',result)
+        savetxt(engine.dout+'/'+engine.name.full+'_EB.dat',result)
     if app.plot:
-        plt.title(engine.name.full_name+'_EB')
+        plt.title(engine.name.full+'_EB')
         plt.plot(result[:,0],result[:,1:])
         if app.show:
             plt.show()
         else:
-            plt.savefig(engine.dout+'/'+engine.name.full_name+'_EB.png')
+            plt.savefig(engine.dout+'/'+engine.name.full+'_EB.png')
 
 def TBADOS(engine,app):
     result=zeros((app.ne,2))
@@ -82,11 +80,11 @@ def TBADOS(engine,app):
        result[i,0]=v
        result[i,1]=sum(app.delta/((v-eigvals)**2+app.delta**2))
     if app.save_data:
-        savetxt(engine.dout+'/'+engine.name.full_name+'_DOS.dat',result)
+        savetxt(engine.dout+'/'+engine.name.full+'_DOS.dat',result)
     if app.plot:
-        plt.title(engine.name.full_name+'_DOS')
+        plt.title(engine.name.full+'_DOS')
         plt.plot(result[:,0],result[:,1])
         if app.show:
             plt.show()
         else:
-            plt.savefig(engine.dout+'/'+engine.name.full_name+'_DOS.png')
+            plt.savefig(engine.dout+'/'+engine.name.full+'_DOS.png')

@@ -14,33 +14,31 @@ import os.path,sys
 class ONR(Engine):
     '''
     The class ONR provides the methods to get the sparse matrix representation on the occupation number basis of an electron system. Apart from those inherited from its parent class Engine, it has the following attributes:
-    1) name: the name of the system;
-    2) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
-    3) filling: the filling factor of the system;
-    4) mu: the chemical potential of the system;
-    5) basis: the occupation number basis of the system;
-    6) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no; 
-    7) lattice: the lattice of the system;
-    8) terms: the terms of the system;
-    9) nambu: a flag to tag whether pairing terms are involved;
-    10) generators: a dict containing the needed operator generators, which generally has only one entry:
+    1) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
+    2) filling: the filling factor of the system;
+    3) mu: the chemical potential of the system;
+    4) basis: the occupation number basis of the system;
+    5) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no; 
+    6) lattice: the lattice of the system;
+    7) terms: the terms of the system;
+    8) nambu: a flag to tag whether pairing terms are involved;
+    9) generators: a dict containing the needed operator generators, which generally has only one entry:
         (1) entry 'h' is the generator for the whole Hamiltonian;
-    11) operators: a dict containing different groups of operators for diverse tasks, which generally has two entries:
+    10) operators: a dict containing different groups of operators for diverse tasks, which generally has two entries:
         (1) entry 'h' includes "half" the operators of the Hamiltonian, and
         (2) entry 'sp' includes all the single-particle operators;
-    12) matrix: the sparse matrix representation of the system;
-    13) cache: the cache during the process of calculation.
+    11) matrix: the sparse matrix representation of the system;
+    12) cache: the cache during the process of calculation.
     '''
 
-    def __init__(self,name=None,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,lattice=None,terms=None,nambu=False,**karg):
-        self.name=Name(prefix=name,suffix=self.__class__.__name__)
+    def __init__(self,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,lattice=None,terms=None,nambu=False,**karg):
         self.ensemble=ensemble
         self.filling=filling
         self.mu=mu
         if self.ensemble.lower()=='c':
-            self.name['filling']=self.filling
+            self.name.update(const={'filling':self.filling})
         elif self.ensemble.lower()=='g':
-            self.name['mu']=self.mu
+            self.name.update(alter={'mu':self.mu})
         self.basis=basis
         self.nspin=nspin if basis.basis_type=='ES' else 2
         self.lattice=lattice
@@ -48,8 +46,8 @@ class ONR(Engine):
         self.nambu=nambu
         self.generators={}
         self.generators['h']=Generator(bonds=lattice.bonds,table=lattice.table(nambu=False),terms=terms,nambu=False,half=True)
-        self.name.update(self.generators['h'].parameters['const'])
-        self.name.update(self.generators['h'].parameters['alter'])
+        self.name.update(const=self.generators['h'].parameters['const'])
+        self.name.update(alter=self.generators['h'].parameters['alter'])
         self.operators={}
         self.set_operators()
         self.cache={}
@@ -110,8 +108,8 @@ class ONR(Engine):
 
 def ONRGFC(engine,app):
     nopt=len(engine.operators['sp'])
-    if os.path.isfile(engine.din+'/'+engine.name.full_name+'_coeff.dat'):
-        with open(engine.din+'/'+engine.name.full_name+'_coeff.dat','rb') as fin:
+    if os.path.isfile(engine.din+'/'+engine.name.full+'_coeff.dat'):
+        with open(engine.din+'/'+engine.name.full+'_coeff.dat','rb') as fin:
             app.gse=fromfile(fin,count=1)
             app.coeff=fromfile(fin,dtype=complex128)
         if len(app.coeff)==nopt*nopt*2*3*app.nstep:
@@ -154,7 +152,7 @@ def ONRGFC(engine,app):
                 sys.stdout.flush()
         print
     if app.save_data:
-        with open(engine.din+'/'+engine.name.full_name+'_coeff.dat','wb') as fout:
+        with open(engine.din+'/'+engine.name.full+'_coeff.dat','wb') as fout:
             array(app.gse).tofile(fout)
             app.coeff.tofile(fout)
 
@@ -208,11 +206,11 @@ def ONRDOS(engine,app):
     result[:,0]=erange
     result[:,1]=-2*imag(trace(engine.gf_mesh(erange[:]+engine.mu+1j*app.delta),axis1=1,axis2=2))
     if app.save_data:
-        savetxt(engine.dout+'/'+engine.name.full_name+'_DOS.dat',result)
+        savetxt(engine.dout+'/'+engine.name.full+'_DOS.dat',result)
     if app.plot:
-        plt.title(engine.name.full_name+'_DOS')
+        plt.title(engine.name.full+'_DOS')
         plt.plot(result[:,0],result[:,1])
         if app.show:
             plt.show()
         else:
-            plt.savefig(engine.dout+'/'+engine.name.full_name+'_DOS.png')
+            plt.savefig(engine.dout+'/'+engine.name.full+'_DOS.png')
