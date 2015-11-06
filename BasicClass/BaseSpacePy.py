@@ -1,17 +1,17 @@
 from BasicGeometryPy import *
 from numpy.linalg import inv
+from collections import OrderedDict
 import matplotlib.pyplot as plt
 class BaseSpace:
     '''
-    The BaseSpace class provides a unified description of all kinds of parameter spaces. It has the following attributes:
-    1) mode: a string specifies the meaning of the coordinate in the base space.
-    2) mesh: a two-dimensional numpy array, of whose shape, the first element equals the number of points in the base space and the second element equals the dimension of the base space.
-    3) volume: the volume of the base space.
+    The BaseSpace class provides a unified description of all kinds of parameter spaces.
     '''
-    def __init__(self,mode,mesh=None,volume=0.0):
-        self.mode=mode
-        self.mesh=mesh
-        self.volume=volume
+    def __init__(self,mode=None,mesh=None,volume=0.0):
+        self.mesh=OrderedDict()
+        self.volume=OrderedDict()
+        if mode is not None:
+            self.mesh[mode]=mesh
+            self.volume[mode]=volume
 
     def __str__(self):
         '''
@@ -22,22 +22,23 @@ class BaseSpace:
     @property
     def rank(self):
         '''
-        The total number of points in the base space, i.e. self.mesh.shape[0].
+        The total number of points in the base space.
         '''
-        return self.mesh.shape[0]
+        return {key:self.mesh[key].shape[0] for key in self.mesh.keys()}
 
     def plot(self,show=True,name='BaseSpace'):
         '''
         Plot all the points contained in its mesh. Only two dimensional base spaces are supported.
         '''
         plt.axis('equal')
-        x=self.mesh[:,0]
-        y=self.mesh[:,1]
-        plt.scatter(x,y)
-        if show:
-            plt.show()
-        else:
-            plt.savefig(name+'.png')
+        for key,mesh in self.mesh.iteritems():
+            x=mesh[:,0]
+            y=mesh[:,1]
+            plt.scatter(x,y)
+            if show:
+                plt.show()
+            else:
+                plt.savefig(name+'_'+key+'.png')
         plt.close()
 
 def KSpace(reciprocals=None,nk=100,mesh=None,volume=0.0):
@@ -50,11 +51,11 @@ def KSpace(reciprocals=None,nk=100,mesh=None,volume=0.0):
     if not reciprocals is None:
         nvectors=len(reciprocals)
         if nvectors==1:
-            result.volume=norm(reciprocals[0])
+            result.volume['k']=norm(reciprocals[0])
         elif nvectors==2:
-            result.volume=abs(cross(reciprocals[0],reciprocals[1]))
+            result.volume['k']=abs(cross(reciprocals[0],reciprocals[1]))
         elif nvectors==3:
-            result.volume==abs(volume(reciprocals[0],reciprocals[1],reciprocals[2]))
+            result.volume['k']=abs(volume(reciprocals[0],reciprocals[1],reciprocals[2]))
         else:
             raise ValueError("KSpace error: the number of reciprocals should not be greater than 3.")
         ndim=reciprocals[0].shape[0]
@@ -62,7 +63,7 @@ def KSpace(reciprocals=None,nk=100,mesh=None,volume=0.0):
         if nvectors>=1:ubi=nk
         if nvectors>=2:ubj=nk
         if nvectors>=3:ubk=nk
-        result.mesh=zeros((ubi*ubj*ubk,ndim))
+        result.mesh['k']=zeros((ubi*ubj*ubk,ndim))
         for i in xrange(ubi):
             for j in xrange(ubj):
                 for k in xrange(ubk):
@@ -71,7 +72,7 @@ def KSpace(reciprocals=None,nk=100,mesh=None,volume=0.0):
                             if h==0: buff=1.0*i/ubi-0.5
                             if h==1: buff=1.0*j/ubj-0.5
                             if h==2: buff=1.0*k/ubk-0.5
-                            result.mesh[(i*ubj+j)*ubk+k,l]=result.mesh[(i*ubj+j)*ubk+k,l]+reciprocals[h][l]*buff
+                            result.mesh['k'][(i*ubj+j)*ubk+k,l]=result.mesh['k'][(i*ubj+j)*ubk+k,l]+reciprocals[h][l]*buff
     return result
 
 def line_1d(reciprocals=None,nk=100):
@@ -96,11 +97,11 @@ def rectangle_gxm(reciprocals=None,nk=100):
         b1=array([2*pi,0.0])
         b2=array([0.0,2*pi])
     ndim=b1.shape[0]
-    result.mesh=zeros((3*nk,ndim))
+    result.mesh['k']=zeros((3*nk,ndim))
     for i in xrange(nk):
-        result.mesh[i,:]=b1/2*i/nk
-        result.mesh[nk+i,:]=b1/2+b2/2*i/nk
-        result.mesh[nk*2+i,:]=(b1+b2)/2*(1-1.0*i/nk)
+        result.mesh['k'][i,:]=b1/2*i/nk
+        result.mesh['k'][nk+i,:]=b1/2+b2/2*i/nk
+        result.mesh['k'][nk*2+i,:]=(b1+b2)/2*(1-1.0*i/nk)
     return result
 
 def rectangle_gym(reciprocals=None,nk=100):
@@ -115,11 +116,11 @@ def rectangle_gym(reciprocals=None,nk=100):
         b1=array([0.0,2*pi])
         b2=array([2*pi,0.0])
     ndim=b1.shape[0]
-    result.mesh=zeros((3*nk,ndim))
+    result.mesh['k']=zeros((3*nk,ndim))
     for i in xrange(nk):
-        result.mesh[i,:]=b1/2*i/self.nk
-        result.mesh[nk+i,:]=b1/2+b2/2*i/nk
-        result.mesh[nk*2+i,:]=(b1+b2)/2*(1-1.0*i/nk)
+        result.mesh['k'][i,:]=b1/2*i/self.nk
+        result.mesh['k'][nk+i,:]=b1/2+b2/2*i/nk
+        result.mesh['k'][nk*2+i,:]=(b1+b2)/2*(1-1.0*i/nk)
     return result
 
 def rectangle_bz(reciprocals=None,nk=100):
@@ -158,11 +159,11 @@ def hexagon_gkm(reciprocals=None,nk=100,vh='H'):
           b1=array([1.0,0.0])*4*pi/sqrt(3.0)
           b2=array([0.5,sqrt(3.0)/2])*4*pi/sqrt(3.0)
     ndim=b1.shape[0]
-    result.mesh=zeros((3*nk,ndim))
+    result.mesh['k']=zeros((3*nk,ndim))
     for i in xrange(nk):
-        result.mesh[i,:]=(b1+b2)/3*i/nk
-        result.mesh[nk+i,:]=(b1+b2)/3+(b1-2*b2)/6*i/nk
-        result.mesh[nk*2+i,:]=b1/2*(1-1.0*i/nk)
+        result.mesh['k'][i,:]=(b1+b2)/3*i/nk
+        result.mesh['k'][nk+i,:]=(b1+b2)/3+(b1-2*b2)/6*i/nk
+        result.mesh['k'][nk*2+i,:]=b1/2*(1-1.0*i/nk)
     return result
 
 def hexagon_bz(reciprocals=None,nk=100,vh='H'):
@@ -186,7 +187,7 @@ def hexagon_bz(reciprocals=None,nk=100,vh='H'):
           b1=array([1.0,0.0])*4*pi/sqrt(3.0)
           b2=array([0.5,sqrt(3.0)/2])*4*pi/sqrt(3.0)
     ndim=b1.shape[0]
-    result.mesh=zeros((nk**2,ndim))
+    result.mesh['k']=zeros((nk**2,ndim))
     p0=-(b1+b2)/3
     p1=(b1+b2)/3
     p2=(b1+b2)*2/3
@@ -197,8 +198,8 @@ def hexagon_bz(reciprocals=None,nk=100,vh='H'):
           coords=b1*(i-1)/nk+b2*(j-1)/nk+p0
           if in_triangle(coords,p1,p2,p3): coords=coords-b1
           if in_triangle(coords,p1,p2,p4): coords=coords-b2
-          result.mesh[i*nk+j,:]=coords
-    result.volume=abs(cross(b1,b2))
+          result.mesh['k'][i*nk+j,:]=coords
+    result.volume['k']=abs(cross(b1,b2))
     return result
     
 def in_triangle(p0,p1,p2,p3):

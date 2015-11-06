@@ -2,7 +2,7 @@ from BasicClass.BaseSpacePy import *
 def test_basespace():
     a=KSpace(reciprocals=[array([2*pi,0.0]),array([0.0,2*pi])],nk=100)
     a.plot(show=True)
-    print a.volume/(2*pi)**2
+    print a.volume['k']/(2*pi)**2
     a=KSpace(reciprocals=[array([1.0,0.0]),array([0.5,sqrt(3.0)/2])],nk=100)
     a.plot(show=True)
     print a.volume
@@ -14,7 +14,7 @@ def test_basespace_functions():
     print a.volume
     a=rectangle_bz(nk=100)
     a.plot(show=True)
-    print a.volume/(2*pi)**2
+    print a.volume['k']/(2*pi)**2
     a=hexagon_bz(nk=100,vh='v')
     a.plot(show=True)
-    print a.volume/(2*pi)**2
+    print a.volume['k']/(2*pi)**2

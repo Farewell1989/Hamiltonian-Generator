@@ -32,6 +32,13 @@ class GP(App):
         self.e_degs=[(0,e1,deg1),(e1,e2,deg2),(e2,e2*n,deg3)]
         self.gp=0
 
+class GPS(App):
+    '''
+    Grand potential surface.
+    '''
+    def __init__(self):
+        pass
+
 class GFC(App):
     '''
     The coefficients of Green's functions.

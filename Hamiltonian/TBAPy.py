@@ -40,24 +40,25 @@ class TBA(Engine):
 
     def all_eigvals(self,kspace=None):
         nmatrix=len(self.generator.table)
-        result=zeros(nmatrix*(1 if kspace==None else kspace.rank))
+        result=zeros(nmatrix*(1 if kspace==None else kspace.rank['k']))
         if kspace==None:
             result[...]=eigh(self.matrix(),eigvals_only=True)
         else:
-            for i,k in enumerate(list(kspace.mesh)):
+            for i,k in enumerate(list(kspace.mesh['k'])):
                 result[i*nmatrix:(i+1)*nmatrix]=eigh(self.matrix(k=k),eigvals_only=True)
         return result
 
 def TBAEB(engine,app):
     nmatrix=len(engine.generator.table)
     if app.path!=None:
-        result=zeros((app.path.rank,nmatrix+1))
-        if len(app.path.mesh.shape)==1:
-            result[:,0]=app.path.mesh
+        key=app.path.mesh.keys()[0]
+        result=zeros((app.path.rank[key],nmatrix+1))
+        if len(app.path.mesh[key].shape)==1:
+            result[:,0]=app.path.mesh[key]
         else:
-            result[:,0]=array(xrange(app.path.rank))
-        for i,parameter in enumerate(list(app.path.mesh)):
-            result[i,1:]=eigh(engine.matrix(**{app.path.mode:parameter}),eigvals_only=True)
+            result[:,0]=array(xrange(app.path.rank[key]))
+        for i,parameter in enumerate(list(app.path.mesh[key])):
+            result[i,1:]=eigh(engine.matrix(**{key:parameter}),eigvals_only=True)
     else:
         result=zeros((2,nmatrix+1))
         result[:,0]=array(xrange(2))

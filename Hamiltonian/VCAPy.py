@@ -133,14 +133,14 @@ class VCA(ONR):
             for j,optj in enumerate(buff[i]):
                 self.clmap['seqs'][i,j],self.clmap['coords'][i,j,:]=optj.seqs[0]+1,optj.rcoords[0]
 
-    def pt(self,ks):
+    def pt(self,k):
         '''
         Returns the matrix form of the perturbation terms.
         '''
         ngf=len(self.operators['sp'])
         result=zeros((ngf,ngf),dtype=complex128)
         for opt in self.operators['pt']:
-            result[opt.seqs]+=opt.value*(1 if len(ks)==0 else exp(-1j*inner(ks,opt.icoords[0])))
+            result[opt.seqs]+=opt.value*(1 if len(k)==0 else exp(-1j*inner(k,opt.icoords[0])))
         return result+conjugate(result.T)
 
     def pt_mesh(self,kmesh):
@@ -151,17 +151,17 @@ class VCA(ONR):
             return self.cache['pt_mesh']
         else:
             result=zeros((kmesh.shape[0],len(self.operators['sp']),len(self.operators['sp'])),dtype=complex128)
-            for i,ks in enumerate(kmesh):
-                result[i,:,:]=self.pt(ks)
+            for i,k in enumerate(kmesh):
+                result[i,:,:]=self.pt(k)
             self.cache['pt_mesh']=result
             return result
 
-    def gf_vca(self,omega=None,ks=[]):
+    def gf_vca(self,omega=None,k=[]):
         '''
         Returns the single particle Green's function of the system.
         '''
         ngf,ngf_vca,gf=len(self.operators['sp']),len(self.operators['csp']),self.gf(omega)
-        return gf_contract(ks=ks,gf_buff=dot(gf,inv(identity(ngf,dtype=complex128)-dot(self.pt(ks),gf))),seqs=self.clmap['seqs'],coords=self.clmap['coords'])/(ngf/ngf_vca)
+        return gf_contract(k=k,gf_buff=dot(gf,inv(identity(ngf,dtype=complex128)-dot(self.pt(k),gf))),seqs=self.clmap['seqs'],coords=self.clmap['coords'])/(ngf/ngf_vca)
 
     def gf_vca_kmesh(self,omega,kmesh):
         '''
@@ -171,8 +171,8 @@ class VCA(ONR):
         gf=self.gf(omega)
         buff=einsum('jk,ikl->ijl',gf,inv(identity(ngf,dtype=complex128)-dot(self.pt_mesh(kmesh),gf)))
         result=zeros((kmesh.shape[0],ngf_vca,ngf_vca),dtype=complex128)
-        for n,ks in enumerate(kmesh):
-            result[n,:,:]=gf_contract(ks=ks,gf_buff=buff[n,:,:],seqs=self.clmap['seqs'],coords=self.clmap['coords'])
+        for n,k in enumerate(kmesh):
+            result[n,:,:]=gf_contract(k=k,gf_buff=buff[n,:,:],seqs=self.clmap['seqs'],coords=self.clmap['coords'])
         return result/(ngf/ngf_vca)
 
 def has_integer_solution(coords,vectors):
@@ -210,7 +210,7 @@ def VCAEB(engine,app):
     erange=linspace(app.emin,app.emax,app.ne)
     result=zeros((app.path.rank,app.ne))
     for i,omega in enumerate(erange):
-        result[:,i]=-2*imag((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.path.mesh),axis1=1,axis2=2)))
+        result[:,i]=-2*imag((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.path.mesh['k']),axis1=1,axis2=2)))
     if app.save_data:
         buff=zeros((app.path.rank*app.ne,3))
         for k in xrange(buff.shape[0]):
@@ -258,13 +258,33 @@ def VCAGP(engine,app):
         nodes,weights=integration_knots_weights(a,b,deg,method='legendre')
         buff=zeros(deg)
         for i,node in enumerate(nodes):
-            buff[i]=sum(log(abs(det(eye(ngf)-dot(engine.pt_mesh(app.BZ.mesh),engine.gf(omega=node*1j+engine.mu))))))
+            buff[i]=sum(log(abs(det(eye(ngf)-dot(engine.pt_mesh(app.BZ.mesh['k']),engine.gf(omega=node*1j+engine.mu))))))
         app.gp+=dot(weights,buff)
     app.gp=(engine.apps['GFC'].gse-2/engine.nspin*app.gp/(pi*app.BZ.rank))/engine.clmap['seqs'].shape[1]
-    app.gp=app.gp+real(sum(trace(engine.pt_mesh(app.BZ.mesh),axis1=1,axis2=2))/app.BZ.rank/engine.clmap['seqs'].shape[1])
+    app.gp=app.gp+real(sum(trace(engine.pt_mesh(app.BZ.mesh['k']),axis1=1,axis2=2))/app.BZ.rank/engine.clmap['seqs'].shape[1])
     app.gp=app.gp-engine.mu*engine.filling*len(engine.operators['csp'])*2/engine.nspin
     app.gp=app.gp/len(engine.cell.points)
     print 'gp:',app.gp
 
 def VCAGPS(engine,app):
-    pass
+    engine.cache.pop('pt_mesh',None)
+    ngf=len(engine.operators['sp'])
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

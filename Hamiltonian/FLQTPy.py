@@ -26,16 +26,17 @@ def FLQTEB(engine,app):
     nmatrix=len(engine.generator.table)
     if app.path!=None:
         result=zeros((app.path.rank,nmatrix+1))
-        if len(app.path.mesh.shape)==1:
-            result[:,0]=app.path.mesh
+        key=app.path.mesh.keys()[0]
+        if len(app.path.mesh[key].shape)==1:
+            result[:,0]=app.path.mesh[key]
         else:
-            result[:,0]=array(xrange(app.path.rank))
-        for i,parameter in enumerate(list(app.path.mesh)):
-            result[i,1:]=phase(eig(engine.evolution(t=app.ts.mesh,**{app.path.mode:parameter}))[0])/app.ts.volume
+            result[:,0]=array(xrange(app.path.rank[key]))
+        for i,parameter in enumerate(list(app.path.mesh[key])):
+            result[i,1:]=phase(eig(engine.evolution(t=app.ts.mesh['t'],**{key:parameter}))[0])/app.ts.volume['t']
     else:
         result=zeros((2,nmatrix+1))
         result[:,0]=array(xrange(2))
-        result[0,1:]=angle(eig(engine.evolution(t=app.ts.mesh))[0])/app.ts.volume
+        result[0,1:]=angle(eig(engine.evolution(t=app.ts.mesh['t']))[0])/app.ts.volume['t']
         result[1,1:]=result[0,1:]
     if app.save_data:
         savetxt(engine.dout+'/'+engine.name.full+'_EB.dat',result)
