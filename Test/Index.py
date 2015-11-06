@@ -1,5 +1,9 @@
 from BasicClass.IndexPy import *
 def test_index():
+    test_index_body()
+    test_index_functions()
+
+def test_index_body():
     a=Index(0,0,0,CREATION)
     b=Index(0,0,1,CREATION)
     print 'a:\n',a

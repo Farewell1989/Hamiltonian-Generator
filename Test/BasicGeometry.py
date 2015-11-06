@@ -1,4 +1,8 @@
 from BasicClass.BasicGeometryPy import *
+def test_basicgeometry():
+    test_basicgeometry_functions()
+    test_point()
+
 def test_basicgeometry_functions():
     a=array([1.0,-1.0,0.0])
     print azimuthd(a)

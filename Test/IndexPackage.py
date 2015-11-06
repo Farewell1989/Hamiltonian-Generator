@@ -1,5 +1,9 @@
 from BasicClass.IndexPackagePy import *
 def test_indexpackage():
+    test_indexpackage_body()
+    test_indexpackage_functions()
+
+def test_indexpackage_body():
     a=IndexPackage(1.0,orbitals=[0,0])
     b=IndexPackage(2.0,atoms=[0,0])
     c=IndexPackage(3.0,spins=[0,0])

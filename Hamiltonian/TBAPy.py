@@ -38,14 +38,14 @@ class TBA(Engine):
         result+=conjugate(result.T)
         return result
 
-    def all_eigvals(self,kspace=None):
+    def eigvals(self,kspace=None):
         nmatrix=len(self.generator.table)
-        result=zeros(nmatrix*(1 if kspace==None else kspace.rank['k']))
+        result=zeros(nmatrix*(1 if kspace==None else product(kspace.rank.values())))
         if kspace==None:
             result[...]=eigh(self.matrix(),eigvals_only=True)
         else:
-            for i,k in enumerate(list(kspace.mesh['k'])):
-                result[i*nmatrix:(i+1)*nmatrix]=eigh(self.matrix(k=k),eigvals_only=True)
+            for i,paras in enumerate(kspace()):
+                result[i*nmatrix:(i+1)*nmatrix]=eigh(self.matrix(**paras),eigvals_only=True)
         return result
 
 def TBAEB(engine,app):
@@ -76,7 +76,7 @@ def TBAEB(engine,app):
 
 def TBADOS(engine,app):
     result=zeros((app.ne,2))
-    eigvals=engine.all_eigvals(app.BZ)
+    eigvals=engine.eigvals(app.BZ)
     for i,v in enumerate(linspace(eigvals.min(),eigvals.max(),num=app.ne)):
        result[i,0]=v
        result[i,1]=sum(app.delta/((v-eigvals)**2+app.delta**2))

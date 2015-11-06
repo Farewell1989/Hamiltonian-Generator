@@ -6,31 +6,24 @@ for arg in sys.argv:
     if arg in ('index','all'):
         from Test.Index import *
         test_index()
-        test_index_functions()
     if arg in ('table','all'):
         from Test.Table import *
         test_table()
-        test_table_functions_index()
-        test_table_functions_string()
     if arg in ('basicgeometry','all'):
         from Test.BasicGeometry import *
-        test_point()
-        test_basicgeometry_functions()
+        test_basicgeometry()
     if arg in ('indexpackage','all'):
         from Test.IndexPackage import *
         test_indexpackage()
-        test_indexpackage_functions()
     if arg in ('bond','all'):
         from Test.Bond import *
         test_bond()
     if arg in ('operator','all'):
         from Test.Operator import *
         test_operator()
-        test_operatorlist()
     if arg in ('basespace','all'):
         from Test.BaseSpace import *
         test_basespace()
-        test_basespace_functions()
     if arg in ('lattice','all'):
         from Test.Lattice import *
         test_lattice()
@@ -40,7 +33,6 @@ for arg in sys.argv:
     if arg in ('quadratic','all'):
         from Test.Quadratic import *
         test_quadratic()
-        test_quadratic_operators()
     if arg in ('hubbard','all'):
         from Test.Hubbard import *
         test_hubbard()

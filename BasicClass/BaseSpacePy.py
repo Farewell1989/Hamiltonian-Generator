@@ -2,22 +2,36 @@ from BasicGeometryPy import *
 from numpy.linalg import inv
 from collections import OrderedDict
 import matplotlib.pyplot as plt
+import itertools
 class BaseSpace:
     '''
     The BaseSpace class provides a unified description of all kinds of parameter spaces.
     '''
-    def __init__(self,mode=None,mesh=None,volume=0.0):
+    def __init__(self,paras=None):
         self.mesh=OrderedDict()
         self.volume=OrderedDict()
-        if mode is not None:
-            self.mesh[mode]=mesh
-            self.volume[mode]=volume
+        if paras is not None:
+            for para in paras:
+                self.mesh[para['tag']]=para['mesh'] if 'mesh' in para else None
+                self.volume[para['tag']]=para['volume'] if 'volume' in para else None
 
     def __str__(self):
         '''
         Convert an instance to string.
         '''
         return str(self.mesh)
+
+    def __call__(self,mode="*"):
+        '''
+        Returns a generator which iterates over the whole base space.
+        '''
+        keys=self.mesh.keys()
+        if mode=="*":
+            for values in itertools.product(*self.mesh.values()):
+                yield {key:value for key,value in zip(keys,values)}
+        elif mode=="+":
+            for values in zip(*self.mesh.values()):
+                yield {key:value for key,value in zip(keys,values)}
 
     @property
     def rank(self):
@@ -47,7 +61,7 @@ def KSpace(reciprocals=None,nk=100,mesh=None,volume=0.0):
     1) Assign the reciprocals and the number of slices nk. The mesh and its volume in K-space is generated automatically.
     2) Assign the mesh directly. In this case, the attribute 'volume' may have no physical meanings.
     '''
-    result=BaseSpace(mode='k',mesh=mesh,volume=volume)
+    result=BaseSpace([{'tag':'k','mesh':mesh,'volume':volume}])
     if not reciprocals is None:
         nvectors=len(reciprocals)
         if nvectors==1:
@@ -224,4 +238,4 @@ def TSpace(mesh):
     '''
     The time space.
     '''
-    return BaseSpace(mode='t',mesh=mesh,volume=mesh.max()-mesh.min())
+    return BaseSpace([{'tag':'t','mesh':mesh,'volume':mesh.max()-mesh.min()}])

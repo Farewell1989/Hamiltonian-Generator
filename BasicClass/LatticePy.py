@@ -3,7 +3,7 @@ from BasicGeometryPy import *
 from BondPy import *
 from TablePy import *
 from numpy.linalg import inv
-from itertools import product
+import itertools
 import matplotlib.pyplot as plt
 
 class Lattice(object):
@@ -118,7 +118,7 @@ def bonds(points,vectors=None,nneighbour=1):
     else:
         raise ValueError("Bonds error: the number of vectors should not be greater than 3.")
     mdists=[]
-    indices=list(product(xrange(-sup1,sup1+1),xrange(-sup2,sup2+1),xrange(-sup3,sup3+1)))
+    indices=list(itertools.product(xrange(-sup1,sup1+1),xrange(-sup2,sup2+1),xrange(-sup3,sup3+1)))
     for i,j,k in indices:
         indices.remove((-i,-j,-k))
         if nvectors==0: disp=zeros(ndim)

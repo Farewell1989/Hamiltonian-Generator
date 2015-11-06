@@ -1,5 +1,10 @@
 from BasicClass.TablePy import *
 def test_table():
+    test_table_body()
+    test_table_functions_index()
+    test_table_functions_string()
+
+def test_table_body():
     a=Table([Index(0,0,0,0),Index(0,0,1,0),Index(0,0,2,0)])
     for k,v in a.iteritems():
         print k,v

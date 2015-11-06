@@ -1,6 +1,10 @@
 from BasicClass.QuadraticPy import *
 from BasicClass.LatticePy import *
 def test_quadratic():
+    test_quadratic_body()
+    test_quadratic_operators()
+
+def test_quadratic_body():
     p1=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=2,nspin=2,nnambu=2,scope="WG")
     p2=Point(site=1,rcoord=[1.0,0.0],icoord=[0.0,0.0],atom=1,norbital=2,nspin=2,nnambu=2,scope="WG")
     bond=Bond(neighbour=1,spoint=p1,epoint=p2)
