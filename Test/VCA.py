@@ -24,7 +24,7 @@ def test_vca():
             #weiss=[     Onsite('afm',0.0,indexpackages=sigmaz('sp'),amplitude=lambda bond: 1 if bond.spoint.site in (0,3) else -1)]
             )
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
-    #a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-6,emax=6,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
-    #a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
+    a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-6,emax=6,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
+    a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
     a.addapps('GP',GP(BZ=square_bz(reciprocals=a.lattice.reciprocals,nk=100),rank1=128,n=64,run=VCAGP))
     a.runapps()

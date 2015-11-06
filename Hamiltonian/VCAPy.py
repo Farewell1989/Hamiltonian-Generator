@@ -208,21 +208,21 @@ def has_integer_solution(coords,vectors):
 def VCAEB(engine,app):
     engine.cache.pop('pt_mesh',None)
     erange=linspace(app.emin,app.emax,app.ne)
-    result=zeros((app.path.rank,app.ne))
+    result=zeros((app.path.rank['k'],app.ne))
     for i,omega in enumerate(erange):
         result[:,i]=-2*imag((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.path.mesh['k']),axis1=1,axis2=2)))
     if app.save_data:
-        buff=zeros((app.path.rank*app.ne,3))
+        buff=zeros((app.path.rank['k']*app.ne,3))
         for k in xrange(buff.shape[0]):
-            i,j=divmod(k,app.path.rank)
+            i,j=divmod(k,app.path.rank['k'])
             buff[k,0]=j
             buff[k,1]=erange[i]
             buff[k,2]=result[j,i]
         savetxt(engine.dout+'/'+engine.name.full+'_EB.dat',buff)
     if app.plot:
-        krange=array(xrange(app.path.rank))
+        krange=array(xrange(app.path.rank['k']))
         plt.title(engine.name.full+'_EB')
-        plt.colorbar(plt.pcolormesh(tensordot(krange,ones(app.ne),axes=0),tensordot(ones(app.path.rank),erange,axes=0),result))
+        plt.colorbar(plt.pcolormesh(tensordot(krange,ones(app.ne),axes=0),tensordot(ones(app.path.rank['k']),erange,axes=0),result))
         if app.show:
             plt.show()
         else:
@@ -238,7 +238,7 @@ def VCADOS(engine,app):
     result=zeros((app.ne,2))
     for i,omega in enumerate(erange):
         result[i,0]=omega
-        result[i,1]=-2*imag(sum((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.BZ.mesh),axis1=1,axis2=2))))
+        result[i,1]=-2*imag(sum((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.BZ.mesh['k']),axis1=1,axis2=2))))
     if app.save_data:
         savetxt(engine.dout+'/'+engine.name.full+'_DOS.dat',result)
     if app.plot:
@@ -260,8 +260,8 @@ def VCAGP(engine,app):
         for i,node in enumerate(nodes):
             buff[i]=sum(log(abs(det(eye(ngf)-dot(engine.pt_mesh(app.BZ.mesh['k']),engine.gf(omega=node*1j+engine.mu))))))
         app.gp+=dot(weights,buff)
-    app.gp=(engine.apps['GFC'].gse-2/engine.nspin*app.gp/(pi*app.BZ.rank))/engine.clmap['seqs'].shape[1]
-    app.gp=app.gp+real(sum(trace(engine.pt_mesh(app.BZ.mesh['k']),axis1=1,axis2=2))/app.BZ.rank/engine.clmap['seqs'].shape[1])
+    app.gp=(engine.apps['GFC'].gse-2/engine.nspin*app.gp/(pi*app.BZ.rank['k']))/engine.clmap['seqs'].shape[1]
+    app.gp=app.gp+real(sum(trace(engine.pt_mesh(app.BZ.mesh['k']),axis1=1,axis2=2))/app.BZ.rank['k']/engine.clmap['seqs'].shape[1])
     app.gp=app.gp-engine.mu*engine.filling*len(engine.operators['csp'])*2/engine.nspin
     app.gp=app.gp/len(engine.cell.points)
     print 'gp:',app.gp

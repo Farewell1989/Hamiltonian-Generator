@@ -36,8 +36,8 @@ class GPS(App):
     '''
     Grand potential surface.
     '''
-    def __init__(self):
-        pass
+    def __init__(self,BS):
+        self.BS=BS
 
 class GFC(App):
     '''
