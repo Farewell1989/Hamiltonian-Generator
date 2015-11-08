@@ -213,7 +213,7 @@ def ONRDOS(engine,app):
     erange=linspace(app.emin,app.emax,num=app.ne)
     result=zeros((app.ne,2))
     result[:,0]=erange
-    result[:,1]=-2*imag(trace(engine.gf_mesh(erange[:]+engine.mu+1j*app.delta),axis1=1,axis2=2))
+    result[:,1]=-2*imag(trace(engine.gf_mesh(erange[:]+engine.mu+1j*app.eta),axis1=1,axis2=2))
     if app.save_data:
         savetxt(engine.dout+'/'+engine.name.full+'_DOS.dat',result)
     if app.plot:

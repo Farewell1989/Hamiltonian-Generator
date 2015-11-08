@@ -35,6 +35,6 @@ def test_vcacct():
         nambu=      False
         )
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=VCACCTGFC))
-    a.addapps('DOS',DOS(BZ=hexagon_bz(nk=50),emin=-5,emax=5,ne=400,delta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
-    a.addapps('EB',EB(path=hexagon_gkm(nk=100),emax=6.0,emin=-6.0,delta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
+    a.addapps('DOS',DOS(BZ=hexagon_bz(nk=50),emin=-5,emax=5,ne=400,eta=0.05,save_data=False,run=VCADOS,plot=True,show=True))
+    a.addapps('EB',EB(path=hexagon_gkm(nk=100),emax=6.0,emin=-6.0,eta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
     a.runapps()

@@ -9,19 +9,27 @@ class EB(App):
         self.emax=10.0 if 'emax' not in karg else karg['emax']
         self.emin=-10.0 if 'emin' not in karg else karg['emin']
         self.ne=400 if 'ne' not in karg else karg['ne']
-        self.delta=0.05 if 'delta' not in karg else karg['delta']
+        self.eta=0.05 if 'eta' not in karg else karg['eta']
         if 'ts' in karg: self.ts=karg['ts']
 
 class DOS(App):
     '''
     Density of states.
     '''
-    def __init__(self,BZ=None,ne=100,delta=0.05,emin=-10.0,emax=10.0,**karg):
+    def __init__(self,BZ=None,ne=100,eta=0.05,emin=-10.0,emax=10.0,**karg):
         self.BZ=BZ
         self.ne=ne
-        self.delta=delta
+        self.eta=eta
         self.emin=emin
         self.emax=emax
+
+class FS(App):
+    '''
+    Fermi surface.
+    '''
+    def __init__(self,BZ,eta=0.05,**karg):
+        self.BZ=BZ
+        self.eta=eta
 
 class GP(App):
     '''
@@ -38,6 +46,18 @@ class GPS(App):
     '''
     def __init__(self,BS,**karg):
         self.BS=BS
+
+class CN(App):
+    '''
+    '''
+    def __init__(self,BZ,delta=0.0001,**karg):
+        self.BZ=BZ
+        self.delta=delta
+        self.bc=None
+
+    @property
+    def cn(self):
+        return sum(self.bc)*self.BZ.volume['k']/self.BZ.rank['k']/2/pi
 
 class GFC(App):
     '''

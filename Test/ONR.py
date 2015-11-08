@@ -20,6 +20,6 @@ def test_onr():
                         Hubbard('U',[U])
                         ]
         )
-    a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='SY',run=ONRGFC))
-    a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,delta=0.05,save_data=False,run=ONRDOS,show=True))
+    a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
+    a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,eta=0.05,save_data=False,run=ONRDOS,show=True))
     a.runapps()

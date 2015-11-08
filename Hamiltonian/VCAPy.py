@@ -212,7 +212,7 @@ def VCAEB(engine,app):
     erange=linspace(app.emin,app.emax,app.ne)
     result=zeros((app.path.rank['k'],app.ne))
     for i,omega in enumerate(erange):
-        result[:,i]=-2*imag((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.path.mesh['k']),axis1=1,axis2=2)))
+        result[:,i]=-2*imag((trace(engine.gf_vca_kmesh(omega+engine.mu+app.eta*1j,app.path.mesh['k']),axis1=1,axis2=2)))
     if app.save_data:
         buff=zeros((app.path.rank['k']*app.ne,3))
         for k in xrange(buff.shape[0]):
@@ -240,7 +240,7 @@ def VCADOS(engine,app):
     result=zeros((app.ne,2))
     for i,omega in enumerate(erange):
         result[i,0]=omega
-        result[i,1]=-2*imag(sum((trace(engine.gf_vca_kmesh(omega+engine.mu+app.delta*1j,app.BZ.mesh['k']),axis1=1,axis2=2))))
+        result[i,1]=-2*imag(sum((trace(engine.gf_vca_kmesh(omega+engine.mu+app.eta*1j,app.BZ.mesh['k']),axis1=1,axis2=2))))
     if app.save_data:
         savetxt(engine.dout+'/'+engine.name.full+'_DOS.dat',result)
     if app.plot:

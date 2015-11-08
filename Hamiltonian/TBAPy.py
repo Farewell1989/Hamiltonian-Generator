@@ -79,7 +79,7 @@ def TBADOS(engine,app):
     eigvals=engine.eigvals(app.BZ)
     for i,v in enumerate(linspace(eigvals.min(),eigvals.max(),num=app.ne)):
        result[i,0]=v
-       result[i,1]=sum(app.delta/((v-eigvals)**2+app.delta**2))
+       result[i,1]=sum(app.eta/((v-eigvals)**2+app.eta**2))
     if app.save_data:
         savetxt(engine.dout+'/'+engine.name.full+'_DOS.dat',result)
     if app.plot:
