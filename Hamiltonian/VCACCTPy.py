@@ -65,6 +65,17 @@ class VCACCT(VCA):
         self.set_operators_single_particle()
         self.set_operators_cell_single_particle()
 
+    def update(self,**karg):
+        '''
+        Update the alterable operators, such as the weiss terms.
+        '''
+        for subsystem in self.subsystems.itervalues():
+            subsystem.update(**karg)
+        for generator in self.generators.itervalues():
+            generator.update(**karg)
+        self.name.update(alter=self.generators['pt_h'].parameters['alter'])
+        self.set_operators_perturbation()
+
     def gf(self,omega=None):
         buff=[]
         for sub_onr in [self.subsystems[key] for key in sorted(list(self.subsystems.iterkeys()))]:

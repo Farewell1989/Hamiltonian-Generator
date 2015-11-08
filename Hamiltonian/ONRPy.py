@@ -72,6 +72,15 @@ class ONR(Engine):
             if isinstance(index,Index):self.operators['sp'].append(E_Linear(1,indices=[index],rcoords=[self.lattice.points[index.scope+str(index.site)].rcoord],icoords=[self.lattice.points[index.scope+str(index.site)].icoord],seqs=[sequence]))
         self.operators['sp'].sort(key=lambda operator: operator.seqs[0])
 
+    def update(self,**karg):
+        '''
+        Update the alterable operators.
+        '''
+        for generator in self.generators.itervalues():
+            generator.update(**karg)
+        self.name.update(alter=self.generators['h'].parameters['alter'])
+        self.set_operators_hamiltonian()
+
     def set_matrix(self):
         '''
         Set the csc_matrix representation of the Hamiltonian.

@@ -24,6 +24,8 @@ class Term(object):
             result.value=[value*other for value in result.value]
         else:
             result.value*=other
+            if hasattr(self,'modulate'):
+                result.modulate=lambda *arg,**karg: self.modulate(*arg,**karg)*other
         return result
  
     def __rmul__(self,other):

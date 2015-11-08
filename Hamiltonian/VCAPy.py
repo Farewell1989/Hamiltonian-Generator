@@ -3,6 +3,7 @@ from BasicClass.BaseSpacePy import *
 from VCA_Fortran import *
 from BasicAlgorithm.IntegrationPy import *
 from numpy.linalg import det
+from scipy import interpolate
 class VCA(ONR):
     '''
     The class VCA implements the algorithm of the variational cluster approximation of an electron system. Apart from those inherited from the class Engine, it has the following attributes:
@@ -112,6 +113,7 @@ class VCA(ONR):
         '''
         for generator in self.generators.itervalues():
             generator.update(**karg)
+        self.name.update(alter=self.generators['h'].parameters['alter'])
         self.set_operators_hamiltonian()
         self.set_operators_perturbation()
 
@@ -267,24 +269,30 @@ def VCAGP(engine,app):
     print 'gp:',app.gp
 
 def VCAGPS(engine,app):
-    engine.cache.pop('pt_mesh',None)
     ngf=len(engine.operators['sp'])
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    result=zeros((product(app.BS.rank.values()),len(app.BS.mesh.keys())+1),dtype=float64)
+    for i,paras in enumerate(app.BS('*')):
+        print paras
+        result[i,0:len(app.BS.mesh.keys())]=array(paras.values())
+        engine.cache.pop('pt_mesh',None)
+        engine.update(**paras)
+        engine.runapps('GFC')
+        engine.runapps('GP')
+        result[i,len(app.BS.mesh.keys())]=engine.apps['GP'].gp
+        print
+    if app.save_data:
+        savetxt(engine.dout+'/'+engine.name.const+'_GPS.dat',result)
+    if app.plot:
+        if len(app.BS.mesh.keys())==1:
+            plt.title(engine.name.const+'_GPS')
+            X=linspace(result[:,0].min(),result[:,0].max(),300)
+            for i in xrange(1,result.shape[1]):
+                tck=interpolate.splrep(result[:,0],result[:,i],k=3)
+                Y=interpolate.splev(X,tck,der=0)
+                plt.plot(X,Y)
+            plt.plot(result[:,0],result[:,1],'r.')
+            if app.show:
+                plt.show()
+            else:
+                plt.savefig(engine.dout+'/'+engine.name.const+'_GPS.png')
+            plt.close()
