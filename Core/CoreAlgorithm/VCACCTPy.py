@@ -53,8 +53,8 @@ class VCACCT(VCA):
                     nambu=      nambu,
                     half=       True
                     )
-        self.name.update(const=self.generators['pt_h'].parameters['const'])
-        self.name.update(alter=self.generators['pt_h'].parameters['alter'])
+        self.name.update(const=self.subsystems[self.subsystems.keys()[0]].generators['h'].parameters['const'])
+        self.name.update(alter=self.subsystems[self.subsystems.keys()[0]].generators['h'].parameters['alter'])
         self.operators={}
         self.set_operators()
         self.clmap={}
