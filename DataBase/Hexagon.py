@@ -1,1 +1,2 @@
-from BasicClass.LatticePy import *
+from Hamiltonian.Core.BasicClass import *
+
