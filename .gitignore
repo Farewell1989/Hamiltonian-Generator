@@ -3,6 +3,3 @@
 *.dat
 *.txt
 *.png
-build/
-dist/
-MANIFEST
