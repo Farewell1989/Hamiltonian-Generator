@@ -14,7 +14,7 @@ class HexagonDataBase:
             self.points.append(Point(site=2,rcoord=[0.5,sqrt(3)/2],icoord=[0.0,0.0],norbital=norbital,nspin=nspin,nnambu=nnambu,atom=0,scope=scope))
             self.points.append(Point(site=3,rcoord=[0.5,-sqrt(3)/6],icoord=[0.0,0.0],norbital=norbital,nspin=nspin,nnambu=nnambu,atom=1,scope=scope))
             self.vectors.append(array([1.0,0.0]))
-            self.vectors.append(array([0.0,3.0]))        
+            self.vectors.append(array([0.0,sqrt(3.0)]))        
         elif scope=='H6':
             self.points.append(Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],norbital=norbital,nspin=nspin,nnambu=nnambu,atom=0,scope=scope))
             self.points.append(Point(site=1,rcoord=[0.0,sqrt(3)/3],icoord=[0.0,0.0],norbital=norbital,nspin=nspin,nnambu=nnambu,atom=1,scope=scope))
