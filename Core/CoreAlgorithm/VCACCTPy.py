@@ -31,7 +31,8 @@ class VCACCT(VCA):
                     nspin=      nspin,
                     lattice=    sub_lattice,
                     terms=      terms if weiss is None else terms+weiss,
-                    nambu=      nambu
+                    nambu=      nambu,
+                    **{key:karg[key] for key in karg if key!='name'}
                 )
             if i==0: flag=self.subsystems[sub_lattice.name].nspin
             if flag!=self.subsystems[sub_lattice.name].nspin:
