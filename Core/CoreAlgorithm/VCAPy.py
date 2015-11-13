@@ -231,7 +231,20 @@ def VCAEB(engine,app):
         plt.close()
 
 def VCAFS(engine,app):
-    pass
+    engine.cache.pop('pt_mesh',None)
+    result=-2*imag((trace(engine.gf_vca_kmesh(engine.mu+app.eta*1j,app.BZ.mesh['k']),axis1=1,axis2=2)))
+    if app.save_data:
+        savetxt(engine.dout+'/'+engine.name.full+'_FS.dat',append(app.BZ.mesh['k'],result.reshape((app.BZ.rank['k'],1)),axis=1))
+    if app.plot:
+        plt.title(engine.name.full+"_FS")
+        plt.axis('equal')
+        N=int(round(sqrt(app.BZ.rank['k'])))
+        plt.colorbar(plt.pcolormesh(app.BZ.mesh['k'][:,0].reshape((N,N)),app.BZ.mesh['k'][:,1].reshape(N,N),result.reshape(N,N)))
+        if app.show:
+            plt.show()
+        else:
+            plt.savefig(engine.dout+'/'+engine.name.full+'_FS.png')
+        plt.close()
 
 def VCADOS(engine,app):
     engine.cache.pop('pt_mesh',None)
