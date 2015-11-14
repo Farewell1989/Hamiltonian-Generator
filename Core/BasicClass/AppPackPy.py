@@ -33,6 +33,19 @@ class OP(App):
         self.e_degs=[(-e2*n,-e2,deg3,),(-e2,-e1,deg2),(-e1,e1,2*deg1),(e1,e2,deg2),(e2,e2*n,deg3)]
         self.op=0
 
+class CP(App):
+    '''
+    Chemical potential.
+    '''
+    def __init__(self,BZ=None,eta=0.05,error=10**-6,a=-20,b=20,cut=-10,deg1=64,deg2=64,deg3=200,n1=10,n2=100,**karg):
+        self.BZ=BZ
+        self.eta=eta
+        self.error=10**-6
+        self.a=a
+        self.b=b
+        self.e_degs=[(n2*cut,n1*cut,deg1),(n1*cut,cut,deg2),(cut,0,deg3)]
+        self.mu=0
+
 class FS(App):
     '''
     Fermi surface.

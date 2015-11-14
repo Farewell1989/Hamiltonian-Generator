@@ -2,7 +2,7 @@ from Hamiltonian.Core.CoreAlgorithm.VCAPy import *
 from Hamiltonian.Core.BasicClass.LatticePy import *
 from Hamiltonian.Core.BasicClass.BaseSpacePy import *
 def test_vca():
-    U=0.0
+    U=8.0
     t=-1.0
     m=2;n=2
     p1=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=1,nspin=2,nnambu=1,scope='WG'+str(m)+str(n))
@@ -30,5 +30,6 @@ def test_vca():
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
     #a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,eta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
     #a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-6,emax=6,ne=400,eta=0.05,save_data=False,plot=True,show=True,run=VCADOS))
-    a.addapps('FS',FS(BZ=square_bz(nk=100),save_data=False,run=VCAFS))
+    #a.addapps('FS',FS(BZ=square_bz(nk=100),save_data=False,run=VCAFS))
+    a.addapps('CP',CP(BZ=square_bz(nk=100),eta=0.01,a=0,b=U,run=VCACP))
     a.runapps()

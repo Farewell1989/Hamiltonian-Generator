@@ -3,6 +3,8 @@ from VCA_Fortran import *
 from Hamiltonian.Core.BasicAlgorithm.IntegrationPy import *
 from numpy.linalg import det,inv
 from scipy import interpolate
+from scipy.integrate import quad
+from scipy.optimize import newton,brenth,brentq
 class VCA(ONR):
     '''
     The class VCA implements the algorithm of the variational cluster approximation of an electron system. Apart from those inherited from the class Engine, it has the following attributes:
@@ -230,6 +232,23 @@ def VCAEB(engine,app):
             plt.savefig(engine.dout+'/'+engine.name.full+'_EB.png')
         plt.close()
 
+def VCACP(engine,app):
+    engine.cache.pop('pt_mesh',None)
+    nelectron=app.BZ.rank['k']*len(engine.operators['csp'])*engine.filling
+    fx=lambda omega: -sum(imag((trace(engine.gf_vca_kmesh(omega+app.eta*1j,app.BZ.mesh['k']),axis1=1,axis2=2))))/pi
+    #Fx=lambda omega: quad(fx,-float('inf'),omega)[0]
+    for i,(a,b,deg) in enumerate(app.e_degs):
+        buff=0
+        if i<2:
+            buff+=integration(fx,a,b,deg=deg)
+        else:
+            Fx=lambda omega: integration(fx,a,omega,deg=deg)+buff-nelectron
+    print Fx(engine.mu)
+    #app.mu=newton(Fx,engine.mu,fprime=fx,tol=app.error)
+    app.mu=brenth(Fx,app.a,app.b,xtol=app.error)
+    engine.mu=app.mu
+    print 'mu,error:',engine.mu,Fx(engine.mu)
+
 def VCAFS(engine,app):
     engine.cache.pop('pt_mesh',None)
     result=-2*imag((trace(engine.gf_vca_kmesh(engine.mu+app.eta*1j,app.BZ.mesh['k']),axis1=1,axis2=2)))
@@ -268,12 +287,9 @@ def VCAGP(engine,app):
     engine.cache.pop('pt_mesh',None)
     ngf=len(engine.operators['sp'])
     app.gp=0
-    for a,b,deg in app.e_degs:
-        nodes,weights=integration_knots_weights(a,b,deg,method='legendre')
-        buff=zeros(deg)
-        for i,node in enumerate(nodes):
-            buff[i]=sum(log(abs(det(eye(ngf)-dot(engine.pt_mesh(app.BZ.mesh['k']),engine.gf(omega=node*1j+engine.mu))))))
-        app.gp+=dot(weights,buff)
+    fx=lambda omega: sum(log(abs(det(eye(ngf)-dot(engine.pt_mesh(app.BZ.mesh['k']),engine.gf(omega=omega*1j+engine.mu))))))
+    #for a,b,deg in app.e_degs: app.gp+=integration(fx,a,b,deg=deg)
+    app.gp=quad(fx,0,float(inf))[0]
     app.gp=(engine.apps['GFC'].gse-2/engine.nspin*app.gp/(pi*app.BZ.rank['k']))/engine.clmap['seqs'].shape[1]
     app.gp=app.gp+real(sum(trace(engine.pt_mesh(app.BZ.mesh['k']),axis1=1,axis2=2))/app.BZ.rank['k']/engine.clmap['seqs'].shape[1])
     app.gp=app.gp-engine.mu*engine.filling*len(engine.operators['csp'])*2/engine.nspin
