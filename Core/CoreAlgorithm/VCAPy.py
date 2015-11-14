@@ -236,7 +236,6 @@ def VCACP(engine,app):
     engine.cache.pop('pt_mesh',None)
     nelectron=app.BZ.rank['k']*len(engine.operators['csp'])*engine.filling
     fx=lambda omega: -sum(imag((trace(engine.gf_vca_kmesh(omega+app.eta*1j,app.BZ.mesh['k']),axis1=1,axis2=2))))/pi
-    #Fx=lambda omega: quad(fx,-float('inf'),omega)[0]
     for i,(a,b,deg) in enumerate(app.e_degs):
         buff=0
         if i<2:
