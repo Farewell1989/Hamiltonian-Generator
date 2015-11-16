@@ -37,7 +37,7 @@ class CP(App):
     '''
     Chemical potential.
     '''
-    def __init__(self,BZ=None,eta=0.05,error=10**-6,a=-20,b=20,cut=-10,deg1=64,deg2=64,deg3=200,n1=10,n2=100,**karg):
+    def __init__(self,BZ=None,eta=0.05,error=10**-6,a=-20,b=20,cut=-10,deg1=200,deg2=200,deg3=200,n1=10**2,n2=10**5,**karg):
         self.BZ=BZ
         self.eta=eta
         self.error=10**-6
@@ -73,9 +73,9 @@ class GPS(App):
 class CN(App):
     '''
     '''
-    def __init__(self,BZ,delta=0.0001,**karg):
+    def __init__(self,BZ,d=10**-6,**karg):
         self.BZ=BZ
-        self.delta=delta
+        self.d=d
         self.bc=None
 
     @property

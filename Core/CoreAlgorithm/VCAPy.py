@@ -1,6 +1,7 @@
 from ONRPy import *
 from VCA_Fortran import *
 from Hamiltonian.Core.BasicAlgorithm.IntegrationPy import *
+from Hamiltonian.Core.BasicAlgorithm.BerryCurvaturePy import *
 from numpy.linalg import det,inv
 from scipy import interpolate
 from scipy.integrate import quad
@@ -242,7 +243,6 @@ def VCACP(engine,app):
             buff+=integration(fx,a,b,deg=deg)
         else:
             Fx=lambda omega: integration(fx,a,omega,deg=deg)+buff-nelectron
-    print Fx(engine.mu)
     #app.mu=newton(Fx,engine.mu,fprime=fx,tol=app.error)
     app.mu=brenth(Fx,app.a,app.b,xtol=app.error)
     engine.mu=app.mu
@@ -323,3 +323,27 @@ def VCAGPS(engine,app):
             else:
                 plt.savefig(engine.dout+'/'+engine.name.const+'_GPS.png')
             plt.close()
+
+def VCACN(engine,app):
+    engine.gf(omega=engine.mu)
+    H=lambda kx,ky: -inv(engine.gf_vca(k=[kx,ky]))
+    app.bc=zeros(app.BZ.rank['k'])
+    for i,paras in enumerate(app.BZ()):
+        app.bc[i]=berry_curvature(H,paras['k'][0],paras['k'][1],0,d=app.d)
+    print 'Chern number(mu):',app.cn,'(',engine.mu,')'
+    if app.save_data or app.plot:
+        buff=zeros((app.BZ.rank['k'],3))
+        buff[:,0:2]=app.BZ.mesh['k']
+        buff[:,2]=app.bc
+    if app.save_data:
+        savetxt(engine.dout+'/'+engine.name.full+'_BC.dat',buff)
+    if app.plot:
+        nk=int(round(sqrt(app.BZ.rank['k'])))
+        plt.title(engine.name.full+'_BC')
+        plt.axis('equal')
+        plt.colorbar(plt.pcolormesh(buff[:,0].reshape((nk,nk)),buff[:,1].reshape((nk,nk)),buff[:,2].reshape((nk,nk))))
+        if app.show:
+            plt.show()
+        else:
+            plt.savefig(engine.dout+'/'+engine.name.full+'_BC.png')
+        plt.close()

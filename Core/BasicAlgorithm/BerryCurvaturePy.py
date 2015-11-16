@@ -1,11 +1,13 @@
 from numpy import *
 from scipy.linalg import eigh
-def berry_curvature(H,Vx,Vy,mu):
+def berry_curvature(H,kx,ky,mu,d=10**-6):
     '''
-    This function calculates the Berry curvature of the occupied bands.
+    This function calculates the Berry curature of the occupied bands for a Hamiltonian with the given chemical potential.
     '''
     result=0
-    Es,Evs=eigh(H)
+    Vx=(H(kx+d,ky)-H(kx-d,ky))/(2*d)
+    Vy=(H(kx,ky+d)-H(kx,ky-d))/(2*d)
+    Es,Evs=eigh(H(kx,ky))
     for n in xrange(Es.shape[0]):
         for m in xrange(Es.shape[0]):
             if Es[n]<=mu and Es[m]>mu:

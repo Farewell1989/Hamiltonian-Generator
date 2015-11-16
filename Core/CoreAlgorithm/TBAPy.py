@@ -2,6 +2,7 @@ from Hamiltonian.Core.BasicClass.AppPackPy import *
 from Hamiltonian.Core.BasicClass.QuadraticPy import *
 from Hamiltonian.Core.BasicClass.GeneratorPy import *
 from Hamiltonian.Core.BasicClass.NamePy import *
+from Hamiltonian.Core.BasicAlgorithm.BerryCurvaturePy import *
 from scipy.linalg import eigh
 import matplotlib.pyplot as plt 
 class TBA(Engine):
@@ -73,6 +74,7 @@ def TBAEB(engine,app):
             plt.show()
         else:
             plt.savefig(engine.dout+'/'+engine.name.full+'_EB.png')
+        plt.close()
 
 def TBADOS(engine,app):
     result=zeros((app.ne,2))
@@ -89,6 +91,34 @@ def TBADOS(engine,app):
             plt.show()
         else:
             plt.savefig(engine.dout+'/'+engine.name.full+'_DOS.png')
+        plt.close()
+
+def TBACP(engine,app):
+    nelectron=int(round(engine.filling*app.BZ.rank['k']*len(engine.generator.table)))
+    eigvals=sort((engine.eigvals(app.BZ)))
+    app.mu=(eigvals[nelectron]+eigvals[nelectron-2])/2
+    engine.mu=app.mu
+    print 'mu:',app.mu
 
 def TBACN(engine,app):
-    pass
+    H=lambda kx,ky: engine.matrix(k=[kx,ky])
+    app.bc=zeros(app.BZ.rank['k'])
+    for i,paras in enumerate(app.BZ()):
+        app.bc[i]=berry_curvature(H,paras['k'][0],paras['k'][1],engine.mu,d=app.d)
+    print 'Chern number(mu):',app.cn,'(',engine.mu,')'
+    if app.save_data or app.plot:
+        buff=zeros((app.BZ.rank['k'],3))
+        buff[:,0:2]=app.BZ.mesh['k']
+        buff[:,2]=app.bc
+    if app.save_data:
+        savetxt(engine.dout+'/'+engine.name.full+'_BC.dat',buff)
+    if app.plot:
+        nk=int(round(sqrt(app.BZ.rank['k'])))
+        plt.title(engine.name.full+'_BC')
+        plt.axis('equal')
+        plt.colorbar(plt.pcolormesh(buff[:,0].reshape((nk,nk)),buff[:,1].reshape((nk,nk)),buff[:,2].reshape((nk,nk))))
+        if app.show:
+            plt.show()
+        else:
+            plt.savefig(engine.dout+'/'+engine.name.full+'_BC.png')
+        plt.close()
