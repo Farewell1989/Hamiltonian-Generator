@@ -25,7 +25,7 @@ class Term(object):
         else:
             result.value*=other
             if hasattr(self,'modulate'):
-                result.modulate=lambda *arg,**karg: self.modulate(*arg,**karg)*other
+                result.modulate=lambda *arg,**karg: self.modulate(*arg,**karg)*other if self.modulate(*arg,**karg) is not None else None
         return result
  
     def __rmul__(self,other):

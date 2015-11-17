@@ -19,7 +19,7 @@ def test_vca():
             cell=       Lattice(name='WG',points=[p1],vectors=[a1,a2]),
             lattice=    Lattice(name='WG'+str(m)+str(n),points=[p1],translations=[(a1,m),(a2,n)],vectors=[a1*m,a2*n]),
             terms=[     Hopping('t',t,neighbour=1),
-                        Hubbard('U',[U])
+                        Hubbard('U',U)
                         ],
             nambu=      False,
             weiss=[     Onsite('afm',0.0,indexpackages=sigmaz('sp'),amplitude=lambda bond: 1 if bond.spoint.site in (0,3) else -1,modulate=lambda **karg:karg['afm'])]
@@ -31,5 +31,5 @@ def test_vca():
     #a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,eta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
     #a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-6,emax=6,ne=400,eta=0.05,save_data=False,plot=True,show=True,run=VCADOS))
     a.addapps('FS',FS(BZ=square_bz(nk=100),save_data=False,run=VCAFS))
-    a.addapps('CP',CP(BZ=square_bz(nk=100),eta=0.01,a=0,b=U,run=VCACP))
+    #a.addapps('CP',CP(BZ=square_bz(nk=100),eta=0.01,a=0,b=U,run=VCACP))
     a.runapps()

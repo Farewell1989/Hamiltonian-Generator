@@ -53,14 +53,17 @@ class Hubbard(Term):
         else:
             atom=bond.epoint.atom
         if atom==bond.epoint.atom:
-            nv=len(self.value)
+            try:
+                nv=len(self.value)
+            except TypeError:
+                nv=1
             if nv>=1:
                 for h in xrange(bond.epoint.norbital):
                     i=bond.epoint.seq_state(h,1,ANNIHILATION)
                     j=bond.epoint.seq_state(h,0,ANNIHILATION)
                     k=j
                     l=i
-                    result[i,j,k,l]=self.value[0]/2
+                    result[i,j,k,l]=self.value/2 if nv==1 else self.value[0]/2
             if nv==3:
                 for h in xrange(bond.epoint.norbital):
                     for g in xrange(bond.epoint.norbital):

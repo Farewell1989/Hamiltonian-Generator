@@ -82,7 +82,7 @@ class Generator:
             masks={key:False for key in self.terms['alter'].iterkeys()}
             for key,term in self.terms['alter'].iteritems():
                 nv=term[0].modulate(**karg)
-                if norm(array(nv)-array(term[0].value))>RZERO:
+                if nv is not None and norm(array(nv)-array(term[0].value))>RZERO:
                     term[0].value=nv
                     self.parameters['alter'][key]=nv
                     masks[key]=True

@@ -31,7 +31,7 @@ def test_vcacct():
                     ],
         terms=      [
                     Hopping('t1',t1),
-                    Hubbard('U',[U])
+                    Hubbard('U',U)
                     ],
         nambu=      False
         )

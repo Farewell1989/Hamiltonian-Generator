@@ -18,11 +18,11 @@ def test_onr():
             nspin=      2,
             lattice=    Lattice(name='WG'+str(m)+str(n),points=[p1],translations=[(a1,m),(a2,n)]),
             terms=[     Hopping('t',t,neighbour=1),
-                        Hubbard('U',[U],modulate=lambda **karg:karg['U'])
+                        Hubbard('U',U,modulate=lambda **karg:karg['U'])
                         ]
         )
     #a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
     #a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,eta=0.05,save_data=False,run=ONRDOS,show=True))
     #a.addapps('EB',EB(path=BaseSpace([{'tag':'U','mesh':array([[v] for v in linspace(0.0,5.0,100)])}]),ns=6,run=ONREB))
-    a.addapps('EB',EB(path=BaseSpace([{'tag':'U','mesh':linspace(0.0,5.0,100).reshape((100,1))}]),ns=6,run=ONREB))
+    a.addapps('EB',EB(path=BaseSpace([{'tag':'U','mesh':linspace(0.0,5.0,100)}]),ns=6,save_data=False,run=ONREB))
     a.runapps()

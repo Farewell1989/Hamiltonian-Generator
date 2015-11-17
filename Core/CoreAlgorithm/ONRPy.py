@@ -226,14 +226,13 @@ def ONRDOS(engine,app):
         plt.close()
 
 def ONREB(engine,app):
-    key=app.path.mesh.keys()[0]
-    result=zeros((app.path.rank[key],app.ns+1))
-    if len(app.path.mesh[key].shape)==1:
-        result[:,0]=app.path.mesh[key]
+    result=zeros((app.path.rank.values()[0],app.ns+1))
+    if len(app.path.rank)==1 and len(app.path.mesh.values()[0].shape)==1:
+        result[:,0]=app.path.mesh.values()[0]
     else:
-        result[:,0]=array(xrange(app.path.rank[key]))
-    for i,parameter in enumerate(list(app.path.mesh[key])):
-        engine.update(**{key:parameter})
+        result[:,0]=array(xrange(app.path.rank.values()[0]))
+    for i,paras in enumerate(app.path('+')):
+        engine.update(**paras)
         engine.set_matrix()
         result[i,1:]=eigsh(engine.matrix,k=app.ns,which='SA',return_eigenvectors=False)
     if app.save_data:
