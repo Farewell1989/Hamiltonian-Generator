@@ -10,6 +10,7 @@ class EB(App):
         self.emin=-10.0 if 'emin' not in karg else karg['emin']
         self.ne=400 if 'ne' not in karg else karg['ne']
         self.eta=0.05 if 'eta' not in karg else karg['eta']
+        self.ns=6 if 'ns' not in karg else karg['ns']
         if 'ts' in karg: self.ts=karg['ts']
 
 class DOS(App):

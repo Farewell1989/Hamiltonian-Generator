@@ -223,3 +223,26 @@ def ONRDOS(engine,app):
             plt.show()
         else:
             plt.savefig(engine.dout+'/'+engine.name.full+'_DOS.png')
+        plt.close()
+
+def ONREB(engine,app):
+    key=app.path.mesh.keys()[0]
+    result=zeros((app.path.rank[key],app.ns+1))
+    if len(app.path.mesh[key].shape)==1:
+        result[:,0]=app.path.mesh[key]
+    else:
+        result[:,0]=array(xrange(app.path.rank[key]))
+    for i,parameter in enumerate(list(app.path.mesh[key])):
+        engine.update(**{key:parameter})
+        engine.set_matrix()
+        result[i,1:]=eigsh(engine.matrix,k=app.ns,which='SA',return_eigenvectors=False)
+    if app.save_data:
+        savetxt(engine.dout+'/'+engine.name.const+'_EB.dat',result)
+    if app.plot:
+        plt.title(engine.name.const+'_EB')
+        plt.plot(result[:,0],result[:,1:])
+        if app.show:
+            plt.show()
+        else:
+            plt.savefig(engine.dout+'/'+engine.name.const+'_EB.png')
+        plt.close()
