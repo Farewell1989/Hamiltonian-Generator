@@ -5,6 +5,12 @@ class EB(App):
     Energy bands.
     '''
     def __init__(self,path=None,**karg):
+        '''
+        Constructor.
+        Parameters:
+            path: BaseSpace
+                The path in basespace along which the energy spectrum is to be computed.
+        '''
         self.path=path
         self.emax=10.0 if 'emax' not in karg else karg['emax']
         self.emin=-10.0 if 'emin' not in karg else karg['emin']
@@ -18,6 +24,18 @@ class DOS(App):
     Density of states.
     '''
     def __init__(self,BZ=None,ne=100,eta=0.05,emin=-10.0,emax=10.0,**karg):
+        '''
+        Constructor.
+        Parameters:
+            BZ: BaseSpace,optional
+                The Brillouin zone upon which the energy levels are to be computed.
+            emin,emax: float, optional
+                They define the range of the energy within which the DOS is to be computed.
+            ne: int, optional
+                The number of sample points in the energy range defined by emin and emax.
+            eta: float, optional
+                The damping factor.
+        '''
         self.BZ=BZ
         self.ne=ne
         self.eta=eta

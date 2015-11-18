@@ -347,3 +347,21 @@ def VCACN(engine,app):
         else:
             plt.savefig(engine.dout+'/'+engine.name.full+'_BC.png')
         plt.close()
+
+def VCATEB(engine,app):
+    engine.gf(omega=engine.mu)
+    H=lambda kx,ky: -inv(engine.gf_vca(k=[kx,ky]))
+    result=zeros((app.path.rank['k'],len(engine.operators['csp'])+1))
+    for i,paras in enumerate(app.path()):
+        result[i,0]=i
+        result[i,1:]=eigh(H(paras['k'][0],paras['k'][1]),eigvals_only=True)
+    if app.save_data:
+        savetxt(engine.dout+'/'+engine.name.full+'_TEB.dat',result)
+    if app.plot:
+        plt.title(engine.name.full+'_TEB')
+        plt.plot(result[:,0],result[:,1:])
+        if app.show:
+            plt.show()
+        else:
+            plt.savefig(engine.dout+'/'+engine.name.full+'_TEB.png')
+        plt.close()
