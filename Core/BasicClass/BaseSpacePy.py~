@@ -150,6 +150,7 @@ def rectangle_bz(reciprocals=None,nk=100):
     return KSpace(reciprocals=recips,nk=nk)
 
 square_gxm=rectangle_gxm
+square_gym=rectangle_gym
 square_bz=rectangle_bz
 
 def hexagon_gkm(reciprocals=None,nk=100,vh='H'):
