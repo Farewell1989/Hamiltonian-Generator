@@ -1,3 +1,6 @@
+'''
+Basis of electrons systems in the occupation number representation.
+'''
 from numpy import *
 from math import factorial
 from itertools import combinations
@@ -5,21 +8,54 @@ from numba import jit
 
 class BasisE:
     '''
-    Class BasisE deals with the occupation-number basis of electron systems and provides a unified description of the three often-encountered cases, i.e. particle-non-conserved systems, particle-conserved systems and spin-conserved systems. Its attributes are as follows:
-    1) basis_type: a string to distinguish the type of the three kinds of fore mentioned systems;
-    2) nstate: an array containing the numbers of states;
-    3) nparticle: an array containing the numbers of particles;
-    4) basis_table: the table of allowed binary basis of the Hilbert space;
-    5) nbasis: the dimension of the Hilbert space.
+    Basis of electron systems in the occupation number representation. 
+    It provides a unified description of the three often-encountered cases:
+    1) particle-non-conserved systems,
+    2) particle-conserved systems and 
+    3) spin-conserved systems.
+    Attributes:
+        basis_type: string
+            A flag to tag the type of the three kinds of fore-mentioned systems:
+            'EP':
+            'ES':
+            'EG':
+        nstate: 1D ndarray of integers
+            An array containing the numbers of states.
+        nparticle: 1D ndarray of integers
+            An array containing the numbers of particles.
+        basis_table: 1D ndarray of integers
+            The table of allowed binary basis of the Hilbert space.
+        nbasis: integer 
+            The dimension of the Hilbert space.
     '''
     
     def __init__(self,tuple=(),up=(),down=(),nstate=0,dtype=int64):
         '''
-        There are three ways to initialize a BasisE instance:
-        1) Assign the parameter nstate only, which will generate the basis for a particle-non-conserved system with nstate available generalized orbitals(the site and spin index are interpreted as generalized orbital index). The attribute basis_type will be "EG".
-        2) Assign the parameter tuple only, which will generate the basis for a particle-conserved system with tuple[0] generalized orbitals occupied by tuple[1] electrons. The attribute basis_type will be "EP".
-        3) Assign the up and down tuples both, which will generate the basis for a spin-conserved system with up[0] orbitals occupied by up[1] spin-up electrons and down[0] orbitals occupied by down[1] spin-down electrons. The attribute basis_type will be "ES".
-        Note: if more than needed parameters to generate a certain kind a basis are assigned, the __init__ method obeys the following priority to create the instance: "EP" > "ES" > "EG".
+        Constructor.
+        It can be used in three different ways:
+        1) BasisE(nstate=...,dtype=...)
+        2) BasisE((...,...),dtype=...)
+        3) BasisE(up=(...,...),down=(...,...),dtype=...)
+        Which generates a particle-non-conserved basis, a particle-conserved basis and a spin-conserved basis respectively.
+        Parameters:
+            tuple: 2-tuple, optional
+                This tuple contains the information to generate a particle-conserved basis:
+                    tuple[0]: integer
+                        The number of generalized orbitals.
+                    tuple[1]: integer
+                        The number of total electrons.
+            up,down: 2-tuple, optional
+                These two tuples contain the information to generate a spin-conserved basis:
+                    up[0]/down[0]: integer
+                        The number of spin-up/spin-down orbitals.
+                    up[1]/down[1]: intger
+                        The number of spin-up/spin-down electrons.
+            nstate: integer,optional
+                The number of states which is used to generate a particle-non-conserved basis.
+            dtype: dtype
+                The data type of the attribute basis_table.
+        Note: 
+            If more than needed parameters to generate a certain kind a basis are assigned, this method obeys the following priority to create the instance: "EP" > "ES" > "EG".
         '''
         if len(tuple)==2:
             self.basis_type="EP"
@@ -55,7 +91,7 @@ class BasisE:
 
 def basis_table_ep(nstate,nparticle,dtype=int64):
     '''
-    Generate the binary basis table with nstate orbitals occupied by nparticle electrons.
+    This function generates the binary basis table with nstate orbitals occupied by nparticle electrons.
     '''
     result=zeros(factorial(nstate)/factorial(nparticle)/factorial(nstate-nparticle),dtype=dtype)
     buff=combinations(xrange(nstate),nparticle)
@@ -69,7 +105,7 @@ def basis_table_ep(nstate,nparticle,dtype=int64):
 
 def basis_table_es(up,down,dtype=int64):
     '''
-    Generate the binary basis table according to the up and down tuples.
+    This function generates the binary basis table according to the up and down tuples.
     '''
     result=zeros(factorial(up[0])/factorial(up[1])/factorial(up[0]-up[1])*factorial(down[0])/factorial(down[1])/factorial(down[0]-down[1]),dtype=dtype)
     buff_up=list(combinations(xrange(up[0]),up[1]))
@@ -92,7 +128,7 @@ def basis_table_es(up,down,dtype=int64):
 @jit
 def basis_rep(seq_basis,basis_table):
     '''
-    Find the binary basis representation whose sequence in basis_table is seq_basis.
+    This function returns the binary basis representation whose sequence in basis_table is seq_basis.
     '''
     if len(basis_table)==0:
         return seq_basis
@@ -102,7 +138,7 @@ def basis_rep(seq_basis,basis_table):
 @jit
 def seq_basis(basis_rep,basis_table):
     '''
-    Find the basis sequence of basis_rep in basis_table.
+    This function returns the basis sequence of basis_rep in basis_table.
     '''
     if len(basis_table)==0 :
         return basis_rep
