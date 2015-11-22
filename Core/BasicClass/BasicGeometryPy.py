@@ -1,3 +1,8 @@
+'''
+Basic geometry, including
+1) functions: azimuthd,azimuth,polard,polar,volume,is_parallel
+2) classes: Point
+'''
 from numpy import *
 from numpy.linalg import norm
 from ConstantPy import RZERO
@@ -70,21 +75,50 @@ def is_parallel(O1,O2):
 
 class Point:
     '''
-    Structured point, which has the following attribute:
-    1) site: site index of the point, start with 0;
-    2) rcoord: the coordinate in real space;
-    3) icoord: the coordinate in lattice space, default value array([]);
-    4) atom: atom species on this point, default value 0;
-    5) norbital: number of orbitals, default value 1;
-    6) nspin: number of spins, default value 2;
-    7) nnambu: '1' means not using Nambu space while '2' means using Nambu space, default value 1;
-    8) scope: the scope to which a point belongs.
+    Structured point.
+    Attributes:
+        site: integer 
+            The site index of the point, start with 0.
+        rcoord: 1D ndarray
+            The coordinate in real space.
+        icoord: 1D ndarray
+            the coordinate in lattice space.
+        atom: integer, default value 0
+            The atom species on this point.
+        norbital: integer, default value 1
+            Number of orbitals.
+        nspin: integer, default value 2
+            Number of spins.
+        nnambu: integer, default value 1.
+            A flag to indicate whether or not using the Nambu space. 1 means no and 2 means yes.
+        scope: string, default value 'None'
+            The scope to which a point belongs.
     '''
 
-    def __init__(self,site,rcoord,icoord=[],atom=0,norbital=1,nspin=2,nnambu=1,scope=None):
+    def __init__(self,site,rcoord,icoord=None,atom=0,norbital=1,nspin=2,nnambu=1,scope=None):
+        '''
+        Constructor.
+        Parameters:
+            site: integer 
+                The site index of the point.
+            rcoord: 1D array-like
+                The coordinate in real space.
+            icoord: 1D array-like,optional
+                the coordinate in lattice space.
+            atom: integer, optional
+                The atom species on this point.
+            norbital: integer, optional
+                Number of orbitals.
+            nspin: integer, optional
+                Number of spins.
+            nnambu: integer, optional.
+                A flag to indicate whether or not using the Nambu space. 1 means no and 2 means yes.
+            scope: string, optional
+                The scope to which a point belongs.
+        '''
         self.site=site
         self.rcoord=array(rcoord)
-        self.icoord=array(icoord)
+        self.icoord=array([]) if icoord is None else array(icoord)
         self.atom=atom
         self.norbital=norbital
         self.nspin=nspin
@@ -114,7 +148,7 @@ class Point:
         
     def seq_state(self,orbital,spin,nambu):
         '''
-        Sequence of a input state with orbital, spin and nambu index assigned.
+        This methods returns the sequence of a input state with orbital, spin and nambu index assigned.
         '''
         if nambu in (0,1):
             return spin+orbital*self.nspin+nambu*self.norbital*self.nspin
@@ -123,6 +157,11 @@ class Point:
         
     def state_index(self,seq_state):
         '''
-        Orbital, spin and nambu index of a state whose sequence equals the input seq_state.
+        This methods returns the orbital, spin and nambu index of a state whose sequence equals the input seq_state.
+        Parameters:
+            seq_state: integer
+                The sequence of the state.
+        Returns:
+            A dict in the form {'spin':...,'orbital':...,'nambu':...}
         '''
         return {'spin':seq_state%(self.norbital*self.nspin)%self.nspin,'orbital':seq_state%(self.norbital*self.nspin)/self.nspin,'nambu':seq_state/(self.norbital*self.nspin)}
