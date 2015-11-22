@@ -1,8 +1,21 @@
+'''
+Berry curvature.
+'''
 from numpy import *
 from scipy.linalg import eigh
 def berry_curvature(H,kx,ky,mu,d=10**-6):
     '''
-    This function calculates the Berry curature of the occupied bands for a Hamiltonian with the given chemical potential.
+    This function calculates the Berry curature of the occupied bands for a Hamiltonian with the given chemical potential using the Kubo formula.
+    Parameters:
+        H: function
+            Input function which returns the Hamiltonian as a 2D array.
+        kx,ky: float
+            The two parameters which specify the 2D point at which the Berry curvature is to be calculated.
+            They are also the input parameters to be conveyed to the function H.
+        mu: float
+            The chemical potential.
+        d: float,optional
+            The spacing to be used to calculate the derivates.
     '''
     result=0
     Vx=(H(kx+d,ky)-H(kx-d,ky))/(2*d)
