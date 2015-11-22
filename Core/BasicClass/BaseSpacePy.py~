@@ -132,7 +132,7 @@ def rectangle_gym(reciprocals=None,nk=100):
     ndim=b1.shape[0]
     result.mesh['k']=zeros((3*nk,ndim))
     for i in xrange(nk):
-        result.mesh['k'][i,:]=b1/2*i/nk
+        result.mesh['k'][i,:]=b1/2*i/self.nk
         result.mesh['k'][nk+i,:]=b1/2+b2/2*i/nk
         result.mesh['k'][nk*2+i,:]=(b1+b2)/2*(1-1.0*i/nk)
     return result
