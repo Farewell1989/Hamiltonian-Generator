@@ -3,6 +3,7 @@
 *.dat
 *.txt
 *.png
+*.py~
 build/
 dist/
 MANIFEST
