@@ -16,6 +16,9 @@ def berry_curvature(H,kx,ky,mu,d=10**-6):
             The chemical potential.
         d: float,optional
             The spacing to be used to calculate the derivates.
+    Returns:
+        result: float
+            The calculated Berry curvature for function H at point kx,ky with chemical potential mu.
     '''
     result=0
     Vx=(H(kx+d,ky)-H(kx-d,ky))/(2*d)
