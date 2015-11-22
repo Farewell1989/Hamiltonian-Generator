@@ -16,12 +16,17 @@ class VCACCT(VCA):
         self.terms=terms
         self.weiss=weiss
         self.nambu=nambu
+        self.groups={}
         self.subsystems={}
         for i,subsystem in enumerate(subsystems):
             sub_filling=filling if 'filling' not in subsystem else subsystem['filling']
             sub_mu=mu if 'mu' not in subsystem else subsytem['mu']
             sub_basis=subsystem['basis']
             sub_lattice=subsystem['lattice']
+            group=sub_lattice.name if 'group' not in subsystem else subsystem['group']
+            if group not in self.groups:
+                self.groups[group]=[]
+            self.groups[group].append(sub_lattice.name)
             self.subsystems[sub_lattice.name]=ONR(
                     name=       sub_lattice.name,
                     ensemble=   ensemble,
@@ -79,13 +84,20 @@ class VCACCT(VCA):
 
     def gf(self,omega=None):
         buff=[]
-        for sub_onr in [self.subsystems[key] for key in sorted(list(self.subsystems.iterkeys()))]:
-            buff.append(sub_onr.gf(omega))
+        #for sub_onr in [self.subsystems[key] for key in sorted(list(self.subsystems.iterkeys()))]:
+        #    buff.append(sub_onr.gf(omega))
+        for group in self.groups.itervalues():
+            buff.extend([self.subsystems[group[0]].gf(omega)]*len(group))
         return block_diag(*buff)
 
 def VCACCTGFC(engine,app):
     buff=deepcopy(app)
     buff.run=ONRGFC
-    for sub_onr in engine.subsystems.itervalues():
-        sub_onr.addapps('GFC',buff)
-        sub_onr.runapps('GFC')
+    #for sub_onr in engine.subsystems.itervalues():
+    #    sub_onr.addapps('GFC',buff)
+    #    sub_onr.runapps('GFC')
+    for group in engine.groups.itervalues():
+        for i,name in enumerate(group):
+            if i==0:
+                engine.subsystems[name].addapps('GFC',buff)
+                engine.subsystems[name].runapps('GFC')
