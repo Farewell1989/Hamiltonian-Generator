@@ -1,13 +1,23 @@
+'''
+Bond.
+'''
 from BasicGeometryPy import *
 class Bond:
     '''
-    The Bond class packs the essential ingredients of a bond in a lattice system:
-    1) neighbour: as its literal meaning;
-    2) spoint: the start point of the bond;
-    3) epoint: the end point of the bond.    
+    This class describes the bond in a lattice.
+    Attributes:
+        neighbour: integer
+            The rank of the neighbour of the bond.
+        spoint: Point
+            the start point of the bond.
+        epoint: Point
+            the end point of the bond.
     '''
     
     def __init__(self,neighbour,spoint,epoint):
+        '''
+        Constructor.
+        '''
         self.neighbour=neighbour
         self.spoint=spoint
         self.epoint=epoint
@@ -41,6 +51,7 @@ class Bond:
         else:
             return False
 
+    @property
     def reversed(self):
         '''
         Return the reversed bond.

@@ -217,7 +217,7 @@ class QuadraticList(list):
         '''
         result=_operators(self.mesh(bond,half,dtype=dtype),bond,table,half)
         if bond.neighbour!=0:
-            result.extend(_operators(self.mesh(bond.reversed(),half,mask=lambda quadratic: True if quadratic.mode=='pr' else False,dtype=dtype),bond.reversed(),table,half))
+            result.extend(_operators(self.mesh(bond.reversed,half,mask=lambda quadratic: True if quadratic.mode=='pr' else False,dtype=dtype),bond.reversed,table,half))
         return result
 
 def _operators(mesh,bond,table,half=True):
