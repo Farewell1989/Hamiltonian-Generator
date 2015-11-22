@@ -26,7 +26,7 @@ def test_vca():
             )
     #a.addapps(app=GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
     #a.addapps(app=GP(BZ=square_bz(reciprocals=a.lattice.reciprocals,nk=100),rank1=128,n=64,run=VCAGP))
-    #a.addapps('GPS',GPS(BS=BaseSpace([{'tag':'afm','mesh':linspace(0.0,0.3,16)}]),save_data=False,plot=True,run=VCAGPS))
+    #a.addapps('GPS',GPS(BS=BaseSpace({'tag':'afm','mesh':linspace(0.0,0.3,16)}),save_data=False,plot=True,run=VCAGPS))
     a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
     #a.addapps('EB',EB(path=square_gxm(nk=100),emax=6.0,emin=-6.0,eta=0.05,ne=400,save_data=False,plot=True,show=True,run=VCAEB))
     #a.addapps('DOS',DOS(BZ=square_bz(nk=50),emin=-6,emax=6,ne=400,eta=0.05,save_data=False,plot=True,show=True,run=VCADOS))

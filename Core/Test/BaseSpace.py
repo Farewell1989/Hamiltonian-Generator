@@ -27,7 +27,7 @@ def test_kspace_functions():
     a.plot(show=True)
 
 def test_basespace_call():
-    a=BaseSpace([dict(tag='k',mesh=array([1,2,3,4])),{'tag':'t','mesh':array([11,12,13,14])}])
+    a=BaseSpace(dict(tag='k',mesh=array([1,2,3,4])),{'tag':'t','mesh':array([11,12,13,14])})
     for i,paras in enumerate(a('*')):
         print i,paras
     for i,paras in enumerate(a('+')):

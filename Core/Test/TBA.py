@@ -20,5 +20,5 @@ def test_tba():
     a.addapps('DOS',DOS(ne=400,eta=0.01,save_data=False,run=TBADOS))
     #a.addapps('EB',EB(path=line_1d(nk=200),save_data=False,run=TBAEB))
     #a.addapps('DOS',DOS(BZ=line_1d(nk=10000),eta=0.01,ne=400,save_data=False,run=TBADOS))
-    #a.addapps('EB',EB(path=BaseSpace([dict(tag='mu',mesh=linspace(-3,3,num=201))]),run=TBAEB,save_data=False))
+    #a.addapps('EB',EB(path=BaseSpace({'tag':'mu','mesh':linspace(-3,3,num=201)}),run=TBAEB,save_data=False))
     a.runapps()

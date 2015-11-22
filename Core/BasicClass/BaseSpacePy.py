@@ -1,3 +1,6 @@
+'''
+BaseSpace, including KSpace and TSpace.
+'''
 from BasicGeometryPy import *
 from numpy.linalg import inv
 from collections import OrderedDict
@@ -5,15 +8,34 @@ import matplotlib.pyplot as plt
 import itertools
 class BaseSpace:
     '''
-    The BaseSpace class provides a unified description of all kinds of parameter spaces.
+    This class provides a unified description of all kinds of parameter spaces.
+    Attibutes:
+        mesh: OrderedDict with its keys being any hashable object and values being ndarray
+            The mesh of the parameter space.
+            Its keys represent the name of the parameter space when its length ==1 or the tags of different parameter axis when its length >1.
+            Its values contain the corresponding meshes.
+        volume: OrderedDict with its keys being any hashable object and values being float
+            The volume of the parameter space. 
+            This attribute is not always initialized or used.
     '''
-    def __init__(self,paras=None):
+    def __init__(self,*paras):
+        '''
+        Constructor.
+        Parameters:
+            paras: list of dicts
+                Every dict contains the following entries:
+                    Entry 'tag': any hashable object
+                        It specifies the key used in the attributes mesh and volume.
+                    Entry 'mesh': ndarray, optional
+                        The corresponding mesh.
+                    Entry 'volume': float, optional
+                        The corresponding volume.
+        '''
         self.mesh=OrderedDict()
         self.volume=OrderedDict()
-        if paras is not None:
-            for para in paras:
-                self.mesh[para['tag']]=para['mesh'] if 'mesh' in para else None
-                self.volume[para['tag']]=para['volume'] if 'volume' in para else None
+        for para in paras:
+            self.mesh[para['tag']]=para['mesh'] if 'mesh' in para else None
+            self.volume[para['tag']]=para['volume'] if 'volume' in para else None
 
     def __str__(self):
         '''
@@ -24,6 +46,14 @@ class BaseSpace:
     def __call__(self,mode="*"):
         '''
         Returns a generator which iterates over the whole base space.
+        Parameters:
+            mode: string,optional
+                A flag to indicate how to construct the generator.
+                "+": direct sum
+                     In this case, all the meshes must have the same rank.
+                "*": direct product
+        Returns:
+            yield a dict in the form {key1:value1,key2:value2,...}
         '''
         keys=self.mesh.keys()
         if mode=="*":
@@ -36,13 +66,14 @@ class BaseSpace:
     @property
     def rank(self):
         '''
-        The total number of points in the base space.
+        This method returns a dict containing the number of points in the base space.
         '''
         return {key:self.mesh[key].shape[0] for key in self.mesh.keys()}
 
     def plot(self,show=True,name='BaseSpace'):
         '''
-        Plot all the points contained in its mesh. Only two dimensional base spaces are supported.
+        Plot the points contained in its mesh. 
+        Only two dimensional base spaces are supported.
         '''
         plt.axis('equal')
         for key,mesh in self.mesh.iteritems():
@@ -57,12 +88,23 @@ class BaseSpace:
 
 def KSpace(reciprocals=None,nk=100,mesh=None,volume=0.0):
     '''
-    The KSpace function provides a unified description of the whole Broullouin zone(BZ), a path in the BZ, or just some isolated points in the BZ. There are two ways to initialize a non-empty instance:
-    1) Assign the reciprocals and the number of slices nk. The mesh and its volume in K-space is generated automatically.
-    2) Assign the mesh directly. In this case, the attribute 'volume' may have no physical meanings.
+    This function returns a BaseSpace instance that represents the whole Broullouin zone(BZ), a path in the BZ, or just some isolated points in the BZ.
+    It can be used in the following ways:
+        1) KSpace(reciprocals=...,nk=...)
+        2) KSpace(mesh=...,volume=...)
+    Parameters:
+        reciprocals: list of 1D ndarrays, optional
+            The unit translation vectors of the BZ.
+        nk: integer,optional
+            The number of mesh points along each unit translation vector.
+        mesh: ndarray, optional
+            The mesh of the BZ
+        volume: float, optional
+            The volume of the BZ.
+            When the parameter reciprocals is not None, it is omitted since the volume of the BZ will be calculated by the reciprocals.
     '''
-    result=BaseSpace([{'tag':'k','mesh':mesh,'volume':volume}])
-    if not reciprocals is None:
+    result=BaseSpace({'tag':'k','mesh':mesh,'volume':volume})
+    if reciprocals is not None:
         nvectors=len(reciprocals)
         if nvectors==1:
             result.volume['k']=norm(reciprocals[0])
@@ -239,4 +281,4 @@ def TSpace(mesh):
     '''
     The time space.
     '''
-    return BaseSpace([{'tag':'t','mesh':mesh,'volume':mesh.max()-mesh.min()}])
+    return BaseSpace({'tag':'t','mesh':mesh,'volume':mesh.max()-mesh.min()})

@@ -23,6 +23,5 @@ def test_onr():
         )
     #a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
     #a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,eta=0.05,save_data=False,run=ONRDOS,show=True))
-    #a.addapps('EB',EB(path=BaseSpace([{'tag':'U','mesh':array([[v] for v in linspace(0.0,5.0,100)])}]),ns=6,run=ONREB))
-    a.addapps('EB',EB(path=BaseSpace([{'tag':'U','mesh':linspace(0.0,5.0,100)}]),ns=6,save_data=False,run=ONREB))
+    a.addapps('EB',EB(path=BaseSpace({'tag':'U','mesh':linspace(0.0,5.0,100)}),ns=6,save_data=False,run=ONREB))
     a.runapps()

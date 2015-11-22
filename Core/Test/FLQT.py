@@ -18,6 +18,6 @@ def test_flqt():
                     ],
         nambu=True
         )
-    #a.addapps('EB',EB(path=BaseSpace('t',array([0,1])),save_data=False,run=TBAEB))
+    #a.addapps('EB',EB(path=BaseSpace({'tag':'t','mesh':array([0,1])}),save_data=False,run=TBAEB))
     a.addapps('EB',EB(ts=TSpace(array([0,0.5,1])),save_data=False,run=FLQTEB))
     a.runapps()
