@@ -1,19 +1,45 @@
+'''
+Lanczos.
+'''
 from numpy import *
 from scipy.sparse import csr_matrix
 from scipy.linalg import eigh
 from numpy.linalg import norm
 class Lanczos:
     '''
-    The Lanczos class provides the following methods to deal with sparse Hermitian matrices:
-    1) __init__: initialize an instance. Note that if the initial state to begin the iteration with is assigned, it must be normalized. A random/symmetric normalized state will be used as the initial state if it is not assigned.
-    2) iter: the Lanczos iteration.
-    3) tridiagnoal: returns the tridiagnoal matrix representation of the original sparse Hermitian matrix.
-    4) eig: returns the ground state energy and optionally the ground state of the sparse Hermitian matrix.
+    The Lanczos algorithm to deal with csr-formed sparse Hermitian matrices.
+    Attributes:
+        matrix: csr_matrix
+            The csr-formed sparse Hermitian matrix.
+        zero: float
+            The precision used to cut off the Lanczos iterations.
+        new,old: 1D ndarray
+            The new and old vectors updated in the Lanczos iterations.
+        a,b: 1D list of floats
+            The coefficients calculated in the Lanczos iterations.
+        cut: logical
+            A flag to tag whether the iteration has been cut off.
     '''
-    def __init__(self,matrix,vector=[],vtype='rd',zero=10**-10,dtype=complex128):
+    def __init__(self,matrix,vector=None,vtype='rd',zero=10**-10,dtype=complex128):
+        '''
+        Constructor.
+        Parameters:
+            matrix: csr_matrix
+                The csr-formed sparse Hermitian matrix.
+            vector: 1D ndarray,optional
+                The initial vector to begin with the Lanczos iterations. 
+                It must be normalized already.
+            vtype: string,optional
+                A flag to tell what type of initial vectors to use when the parameter vector is None.
+                'rd' means a random vector while 'sy' means a symmetric vector.
+            zero: float,optional
+                The precision used to cut off the Lanczos iterations.
+            dtype: dtype,optional
+                The data type of the iterated vectors.
+        '''
         self.matrix=matrix
         self.zero=zero
-        if len(vector)==0:
+        if vector is None:
             if vtype.lower()=='rd':
                 self.new=zeros(matrix.shape[0],dtype=dtype)
                 self.new[:]=random.rand(matrix.shape[0])
@@ -28,6 +54,9 @@ class Lanczos:
         self.b=[]
 
     def iter(self):
+        '''
+        The Lanczos iteration.
+        '''
         count=len(self.a)
         buff=self.matrix.dot(self.new)
         self.a.append(vdot(self.new,buff))
@@ -47,6 +76,12 @@ class Lanczos:
             self.new[:]=0.0
 
     def tridiagnoal(self):
+        '''
+        This method returns the tridiagnoal matrix representation of the original sparse Hermitian matrix.
+        Returns:
+            result: 2D ndarray
+                The tridiagnoal matrix representation of the original sparse Hermitian matrix.
+        '''
         nmatrix=len(self.a)
         result=zeros((nmatrix,nmatrix))
         for i,(a,b) in enumerate(zip(self.a,self.b)):
@@ -57,6 +92,20 @@ class Lanczos:
         return result
 
     def eig(self,job='n',precision=10**-10):
+        '''
+        This method returns the ground state energy and optionally the ground state of the original sparse Hermitian matrix.
+        Parameters:
+            job: string
+                A flag to tag what jobs the method does.
+                'n' means ground state energy only and 'v' means ground state energy and ground state both.
+            precision: float
+                The precision of the calculated ground state energy which is used to terminate the Lanczos iteration.
+        Returns:
+            gse: float
+                the ground state energy.
+            gs: 1D ndarray,optional
+                The ground state. Present when the parameter job is set to be 'V' or 'v'.
+        '''
         if job in ('V','v'):gs=copy(self.new)
         delta=1.0;buff=inf
         while not self.cut and delta>precision:
