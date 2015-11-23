@@ -184,8 +184,9 @@ class HubbardList(list):
                 The index-sequence table.
                 Since Hubbard terms are quartic, it never uses the Nambu space.
             half: logical,optional
-                When it is set to be True, only one half of the Hubbard operators is returned.
-                Note that the coefficient of the self-hermitian operators is also divided by a factor 2.
+                When it is set to be True:
+                1) only one half of the Hubbard operators is returned.
+                2) the coefficient of the self-hermitian operators is also divided by a factor 2.
                 The half==False case is not supported yet.
             dtype: dtype,optional
                 The data type of the coefficient of the returned operators.
