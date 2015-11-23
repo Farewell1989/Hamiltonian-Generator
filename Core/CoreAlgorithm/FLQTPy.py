@@ -1,8 +1,13 @@
+'''
+Floquet algorithm.
+'''
 from TBAPy import *
 from scipy.linalg import expm2,eig
 class FLQT(TBA):
     '''
-    Class FLQT deals with floquet problems.  
+    This class deals with floquet problems. All its attributes are inherited from TBA.
+    Supported methods include:
+    1) FLQTEB: calculate the quasi-energy bands.
     '''
     def __init__(self,filling=0,mu=0,lattice=None,terms=None,nambu=False,**karg):
         super(FLQT,self).__init__(
@@ -14,6 +19,17 @@ class FLQT(TBA):
             )
 
     def evolution(self,t=[],**karg):
+        '''
+        This method returns the matrix representation of the time evolution operator.
+        Parameters:
+            t: 1D array-like
+                The time mesh.
+            karg: dict, optional
+                Other parameters.
+        Returns:
+            result: 2D ndarray
+                The matrix representation of the time evolution operator.
+        '''
         nmatrix=len(self.generator.table)
         result=eye(nmatrix,dtype=complex128)
         nt=len(t)
