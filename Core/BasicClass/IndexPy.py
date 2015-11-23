@@ -1,3 +1,6 @@
+'''
+Index.
+'''
 from copy import deepcopy
 from re import split
 ANNIHILATION=0
@@ -5,12 +8,18 @@ CREATION=1
 
 class Index:
     '''
-    Class Index provides a system to index operators with the following attributes:
-    1) site: site index, start with 0, default value 0;
-    2) orbital: orbital index, start with 0, default value 0; 
-    3) spin: spin index, start with 0, default value 0;
-    4) nambu: '0' for ANNIHILATION and '1' for CREATION, default value ANNIHILATION.
-    5) scope: the scope of the index within which it is defined, default value None.
+    This class provides a linear operator with an index.
+    Attributes:
+        site: integer
+            The site index, start with 0, default value 0.
+        orbital: integer
+            The orbital index, start with 0, default value 0. 
+        spin: integer
+            The spin index, start with 0, default value 0.
+        nambu: integer
+            '0' for ANNIHILATION and '1' for CREATION, default value ANNIHILATION.
+        scope: string
+            The scope of the index within which it is defined, default value 'None'.
     '''
     
     def __init__(self,site=0,orbital=0,spin=0,nambu=ANNIHILATION,scope=None):
@@ -55,21 +64,6 @@ class Index:
         Overloaded operator(!=).
         '''
         return not self==other
-    
-    def we(self,other):
-        '''
-        The so-called 'weakly equivalent', i.e. self == other except that self.nambu may be not equal to other.nambu.
-        '''
-        if self.scope==other.scope and self.site==other.site and self.orbital==other.orbital and self.spin==other.spin:
-            return True
-        else:
-            return False
-
-    def nwe(self,other):
-        '''
-        The so-called 'not weakly equivalent', i.e. even without taking the nambu attribute into account, self is still not equivalent to other.
-        '''
-        return not self.we(other)
     
     @property
     def dagger(self):

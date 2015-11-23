@@ -9,8 +9,6 @@ def test_index_body():
     print 'a:\n',a
     print 'b:\n',b
     print 'a==a.dagger: ',a==a.dagger
-    print 'a.we(a.dagger): ',a.we(a.dagger)
-    print 'a.nwe(b): ',a.nwe(b)
 
 def test_index_functions():
     a=Index(4,3,2,1)
