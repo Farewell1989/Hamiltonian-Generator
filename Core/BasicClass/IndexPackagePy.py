@@ -1,26 +1,58 @@
+'''
+IndexPackage.
+'''
 from numpy import *
 from copy import deepcopy
 
 class IndexPackage:
     '''
-    The IndexPackage class assumes part of a systematic description of a general quadratic term, e.g. a hopping term, an onsite term or a pairing term. It has the following attributes:
-    1) value: the overall coefficient of the index pack;
-    2) atoms: a length=2 array containing the atom indices for the quadratic term;
-    3) orbitals: a length=2 array containing the orbital indices for the quadratic term;
-    4) spins: a length=2 array containing the spin indices for the quadratic term.
+    This class assumes part of a systematic description of a general quadratic term.
+    Attributes:
+        value: float or complex
+            The overall coefficient of the index pack.
+        atoms: 1D ndarray of integers with len==2
+            The atom indices for the quadratic term.
+        orbitals: 1D ndarray of integers with len==2
+            The orbital indices for the quadratic term.
+        spins: 1D ndarray of integers with len==2
+            The spin indices for the quadratic term.
     '''
     
-    def __init__(self,value,atom1=None,atom2=None,orbital1=None,orbital2=None,spin1=None,spin2=None,atoms=[],orbitals=[],spins=[]):
+    def __init__(self,value,atom1=None,atom2=None,orbital1=None,orbital2=None,spin1=None,spin2=None,atoms=None,orbitals=None,spins=None):
+        '''
+        Constructor. 
+        It can be used in two different ways:
+        1) IndexPackage(value,atom1=...,atom2=...,orbital1=...,orbital2=...,spin1=...,spin2=...)
+        2) IndexPackage(value,atoms=...,orbitals=...,spins=...)
+        Parameters:
+            value: float or complex
+                The overall coefficient of the index pack
+            atom1,atom2: integer,optional
+                The atom indices.
+            orbital1,orbital2: integer,optional
+                The orbital indices.
+            spin1,spin2: integer, optional
+                The spin indices.
+            atoms: 1D array-like of integers with len==1,2,optional
+                The atom indices.
+            orbitals: 1D array-like of integers with len==1,2,optional
+                The orbital indices.
+            spins: 1D array-like of integers with len==1,2,optional
+                The spin indices.
+        '''
         self.value=value
-        if atom1!=None and atom2!=None: self.atoms=array([atom1,atom2])
-        if orbital1!=None and orbital2!=None: self.orbitals=array([orbital1,orbital2])
-        if spin1!=None and spin2!=None: self.spins=array([spin1,spin2])
-        if len(atoms)==2: self.atoms=array(atoms)
-        if len(atoms)==1: self.atoms=array([atoms,atoms])
-        if len(orbitals)==2: self.orbitals=array(orbitals)
-        if len(orbitals)==1: self.orbitals=array([orbitals,orbitals])
-        if len(spins)==2: self.spins=array(spins)
-        if len(spins)==1: self.spins=array([spins,spins])
+        if atom1 is not None and atom2 is not None: self.atoms=array([atom1,atom2])
+        if orbital1 is not None and orbital2 is not None: self.orbitals=array([orbital1,orbital2])
+        if spin1 is not None and spin2 is not None: self.spins=array([spin1,spin2])
+        if atoms is not None:
+            if len(atoms)==2: self.atoms=array(atoms)
+            elif len(atoms)==1: self.atoms=array([atoms,atoms])
+        if orbitals is not None:
+            if len(orbitals)==2: self.orbitals=array(orbitals)
+            elif len(orbitals)==1: self.orbitals=array([orbitals,orbitals])
+        if spins is not None:
+            if len(spins)==2: self.spins=array(spins)
+            elif len(spins)==1: self.spins=array([spins,spins])
 
     def __str__(self):
         '''
@@ -91,7 +123,7 @@ class IndexPackage:
 
 class IndexPackageList(list):
     '''
-    IndexPackageList, which can pack several IndexPackage as a whole for convenience.
+    This class packs several IndexPackage as a whole for convenience.
     '''
     def __init__(self,*arg):
         for buff in arg:
