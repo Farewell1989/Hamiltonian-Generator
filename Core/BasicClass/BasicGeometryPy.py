@@ -90,7 +90,7 @@ class Point:
         nspin: integer, default value 2
             Number of spins.
         nnambu: integer, default value 1.
-            A flag to indicate whether or not using the Nambu space. 1 means no and 2 means yes.
+            An integer to indicate whether or not using the Nambu space. 1 means no and 2 means yes.
         scope: string, default value 'None'
             The scope to which a point belongs.
     '''
