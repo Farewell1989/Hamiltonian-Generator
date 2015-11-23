@@ -1,11 +1,19 @@
+'''
+Name of Engine.
+'''
 from collections import OrderedDict
 class Name:
     '''
-    The Name class provides a physical model with a name, whose attributes are as follows:
-    1) prefix: a string to describe the physical system, e.g., the lattice in which it is;
-    2) suffix: additional remarks on the physical model, e.g., the methods used to calculate physical quantities;
-    3) _alter: an ordered dict containing the contant parameters;
-    4) _const: an ordered dict containing the alterable parameters.
+    This class provides an engine with a name.
+    Attributes:
+        prefix: string
+            Description of the engine.
+        suffix: string
+            Additional remarks of the engine.
+        _alter: OrderedDict
+            It contains the contant parameters of the engine.
+        _const: OrderedDict
+            It contains the alterable parameters of the engine.
     '''
     
     def __init__(self,prefix='',suffix=''):
@@ -26,7 +34,7 @@ class Name:
     @property
     def const(self):
         '''
-        Return the name string containing only contant parameters.
+        This method returns a string containing only contant parameters as the name of the engine.
         '''
         result=self.prefix+'_'
         for obj in self._const.itervalues():
@@ -37,7 +45,7 @@ class Name:
     @property
     def alter(self):
         '''
-        Return the name string containing only alterable parameters.
+        This method returns a string containing only alterable parameters as the name of the engine.
         '''
         result=self.prefix+'_'
         for obj in self._alter.itervalues():
@@ -48,7 +56,7 @@ class Name:
     @property
     def full(self):
         '''
-        Return the name string containing both contant parameters and alterable parameters.
+        This method returns a string containing both contant parameters and alterable parameters as the name of the engine.
         '''
         result=self.prefix+'_'
         for obj in self._const.itervalues():
