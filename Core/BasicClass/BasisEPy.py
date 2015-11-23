@@ -16,9 +16,9 @@ class BasisE:
     Attributes:
         basis_type: string
             A flag to tag the type of the three kinds of fore-mentioned systems:
-            'EP':
-            'ES':
-            'EG':
+                'EG': particle-non-conserved systems
+                'EP': particle-conserved systems
+                'ES': spin-conserved systems
         nstate: 1D ndarray of integers
             An array containing the numbers of states.
         nparticle: 1D ndarray of integers
