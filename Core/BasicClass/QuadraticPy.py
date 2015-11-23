@@ -1,3 +1,6 @@
+'''
+Quadratic terms.
+'''
 from TermPy import *
 from IndexPackagePy import *
 from IndexPy import *
@@ -6,23 +9,46 @@ from TablePy import *
 from OperatorPy import * 
 class Quadratic(Term):
     '''
-    Class Quadratic provides a complete and unified description for quadratic terms, i.e. hopping terms, onsite terms and pairing terms. It has the following attributes:
-    1) mode: a string to distinguish which kind of quadratic terms it is;
-    2) value: the overall coefficient for a quadratic term;
-    3) neighbour: as its literal meaning;
-    4) indexpackages: two cases,
-        (1) an instance of IndexPackageList, which can be referenced in the module IndexPackagePy;
-        (2) a function designed to handle those cases where the indexpackages are non-isotropic.
-    5) amplitude : a function designed to deal with non-isotropic cases with a real or complex returned value, which depends on the bond on which the quadratic term is defined, and will be multiplied in addition to the overall coefficient value.
+    This class provides a complete and unified description for quadratic terms, i.e. hopping terms, onsite terms and pairing terms.
+    Attributes:
+        neighbour: integer
+            The order of neighbour of this quadratic term.
+        indexpackages: IndexPackageList or function which returns IndexPackageList
+            The indexpackages of the quadratic term.
+            When it is a function, it is able to handle those cases where the indexpackages depend on bonds.
+        amplitude: function which returns float or complex
+            It is designed to deal with non-isotropic cases where the coefficient of this quadratic term depends on bonds.
+            The returned value will be multiplied in addition to the attribute value as the final coefficient.
     '''
     
     def __init__(self,mode,tag,value,neighbour=0,atoms=[],orbitals=[],spins=[],indexpackages=None,amplitude=None,modulate=None):
         '''
-        Note: atoms,orbitals and spins will be packed by an instance of IndexPackageList.
+        Constructor.
+        Parameters:
+            mode: string
+                The type of the term.
+            tag: string
+                The tag specifying the term used for dictionary lookup.
+            value: float or complex
+                The overall coefficient of the term.
+            neighbour: integer, optional
+                The order of neighbour of the term.
+            atoms,orbitals,spins: list of integer, optional
+                The atom, orbital and spin index used to construct a wanted instance of IndexPackage.
+                When the parameter indexpackages is a function, these parameters will be omitted.
+            indexpackages: IndexPackageList or function
+                1) IndexPackageList:
+                    It will be multiplied by an instance of IndexPackage constructed from atoms, orbitals and spins as self.indexpackages. 
+                2) function:
+                    It must return an instance of IndexPackageList and take an instance of Bond as its only argument.
+            amplitude: function
+                It must return a float or complex and take an instance of Bond as its only argument.
+            modulate: function
+                It must return a float or complex and its arguments are unlimited.
         '''
         super(Quadratic,self).__init__(mode,tag,value,modulate)
         self.neighbour=neighbour
-        if not indexpackages is None:
+        if indexpackages is not None:
             if isinstance(indexpackages,IndexPackageList):
                 self.indexpackages=IndexPackage(1,atoms=atoms,orbitals=orbitals,spins=spins)*indexpackages
             elif callable(indexpackages):
@@ -68,7 +94,7 @@ class Quadratic(Term):
 
     def mesh(self,bond,half=True,dtype=complex128):
         '''
-        Generate the mesh of a quadratic term defined on a bond.
+        This method returns the mesh of a quadratic term defined on a bond.
         '''
         n1=bond.epoint.norbital*bond.epoint.nspin*bond.epoint.nnambu
         n2=bond.spoint.norbital*bond.spoint.nspin*bond.spoint.nnambu
@@ -146,7 +172,7 @@ def Pairing(tag,value,neighbour=0,atoms=[],orbitals=[],spins=[],indexpackages=No
 
 class QuadraticList(list):
     '''
-    The QuadraticList class pack several Quadratic instances as a whole for convenience.
+    This class packs several Quadratic instances as a whole for convenience.
     '''
     
     def __init__(self,*arg):
@@ -195,7 +221,7 @@ class QuadraticList(list):
 
     def mesh(self,bond,half,mask=None,dtype=complex128):
         '''
-        Generate the mesh of all quadratic terms defined on a bond.
+        This method returns the mesh of all quadratic terms defined on a bond.
         '''
         if bond.epoint.nnambu==bond.spoint.nnambu:
             n1=bond.epoint.norbital*bond.epoint.nspin*bond.epoint.nnambu
@@ -210,10 +236,23 @@ class QuadraticList(list):
 
     def operators(self,bond,table,half=True,dtype=complex128):
         '''
-        Generate the set of non-zero operators defined on the input bond.
-        1) The index sequences are determined by the index-sequence table.
-        2) Because of the hermiticity of the Hamiltonian, when the parameter 'half' is set to be true, only one half of the set is returned. Note that the coefficient of the self-hermitian operators is also divided by a factor 2 so that the whole set exactly equals the returned set plus its Hermitian conjugate.
-        3) As for the BdG case, when half=True, only the electron part of the hopping terms and onsite terms are generated since the hole part is nothing but the minus electron part in the matrix representation. As a result, only one quarter of the hopping terms and onsite terms are returned.
+        This method returns all the desired quadratic operators defined on the input bond with non-zero coefficients.
+        Parameters:
+            bond: Bond
+                The bond where the quadratic operators are defined.
+            table: Table
+                The index-sequence table.
+                Only those operators whose indices are in this table will be returned.
+            half: logical,optional
+                When it is set to be True:
+                1) only one half of the quadratic operators is returned.
+                2) the coefficient of the self-hermitian operators is also divided by a factor 2.
+                3) as for the BdG case, only the electron part of the hopping terms and onsite terms are contained.
+            dtype: dtype, optional
+                The data type of the coefficient of the returned operators.
+        Returns:
+            result: OperatorList
+                The quadratic operators with non-zero coefficients.
         '''
         result=_operators(self.mesh(bond,half,dtype=dtype),bond,table,half)
         if bond.neighbour!=0:
