@@ -1,3 +1,6 @@
+'''
+App pack.
+'''
 from EngineAppPy import *
 from numpy import *
 class EB(App):
@@ -8,7 +11,7 @@ class EB(App):
         '''
         Constructor.
         Parameters:
-            path: BaseSpace
+            path: BaseSpace, optional
                 The path in basespace along which the energy spectrum is to be computed.
         '''
         self.path=path
@@ -46,10 +49,17 @@ class OP(App):
     '''
     Order parameter.
     '''
-    def __init__(self,term,BZ=None,e1=5.0,e2=50.0,deg1=64,deg2=64,deg3=64,n=20,**karg):
+    def __init__(self,term,BZ=None,**karg):
+        '''
+        Constructor.
+        Parameters:
+            term: Term
+                The term representing the order parameter.
+            BZ: BaseSpace, optional
+                The Brillouin zone.
+        '''
         self.term=term
         self.BZ=BZ
-        self.e_degs=[(-e2*n,-e2,deg3,),(-e2,-e1,deg2),(-e1,e1,2*deg1),(e1,e2,deg2),(e2,e2*n,deg3)]
         self.op=0
 
 class CP(App):
@@ -77,9 +87,8 @@ class GP(App):
     '''
     Grand potential.
     '''
-    def __init__(self,BZ=None,e1=5.0,e2=50.0,deg1=64,deg2=64,deg3=64,n=20,**karg):
+    def __init__(self,BZ=None,**karg):
         self.BZ=BZ
-        self.e_degs=[(0,e1,deg1),(e1,e2,deg2),(e2,e2*n,deg3)]
         self.gp=0
 
 class GPS(App):
@@ -91,6 +100,7 @@ class GPS(App):
 
 class CN(App):
     '''
+    Chern number.
     '''
     def __init__(self,BZ,d=10**-6,**karg):
         self.BZ=BZ
