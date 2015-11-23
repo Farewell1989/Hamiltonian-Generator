@@ -1,12 +1,20 @@
+'''
+Term.
+'''
 from numpy import *
 from copy import deepcopy
 class Term(object):
     '''
-    Class Term is the base class for all kinds of terms contained in a Hamiltonian. It has the following attributes:
-    1) mode: the type of the term;
-    2) tag: the tag specifying the term used for dictionary lookup;
-    3) value: the overall coefficient(s) of the term;
-    4) modulate: a function used to alter the value of the term.
+    This class is the base class for all kinds of terms contained in a Hamiltonian.
+    Attributes:
+        mode: string
+            The type of the term.
+        tag: string
+            The tag specifying the term used for dictionary lookup.
+        value: scalar of 1D array-like of float, complex
+            The overall coefficient(s) of the term.
+        modulate: function
+            A function used to alter the value of the term.
     '''
     def __init__(self,mode,tag,value,modulate=None):
         self.mode=mode
