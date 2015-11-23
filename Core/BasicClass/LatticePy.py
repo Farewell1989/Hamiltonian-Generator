@@ -1,3 +1,6 @@
+'''
+Lattice.
+'''
 from IndexPy import *
 from BasicGeometryPy import *
 from BondPy import *
@@ -8,22 +11,50 @@ import matplotlib.pyplot as plt
 
 class Lattice(object):
     '''
-    The lattice class provides a unified description of 1D, quasi 1D, 2D, quasi 2D and 3D lattice systems. It has the following attributes:
-    1) name: a string representing the lattice's name;
-    2) points: a dict representing the lattice points in a unit cell;
-    3) vectors: a list representing the translation vectors;
-    4) reciprocals: a list representing the dual translation vectors;
-    5) nneighbour: a number representing the highest order of neighbours;
-    6) bonds: a nested list whose first element represent the zero-th order bonds(i.e. the intra unit cell points), second element the nearest neighbour bonds, third element the next-nearest neighbour bonds, etc.
-    7) priority: a string to indicate the sequence priority of the allowed indices that can be defined on this lattice with the default value 'NSCO', where 'N','S','C','O' stands for 'nambu', 'spin', 'site' and 'orbital' respectively.
+    This class provides a unified description of 1D, quasi 1D, 2D, quasi 2D and 3D lattice systems.
+    Attributes:
+        name: string
+            The lattice's name.
+        points: dict of Point
+            The lattice points in a unit cell.
+        vectors: list of 1D ndarray
+            The translation vectors.
+        reciprocals: list of 1D ndarray
+            The dual translation vectors.
+        nneighbour: integer
+            The highest order of neighbours;
+        bonds: list of Bond
+            The bonds of the lattice system.
+        priority: string
+            The sequence priority of the allowed indices that can be defined on this lattice.
+            Default value 'NSCO', where 'N','S','C','O' stands for 'nambu', 'spin', 'site' and 'orbital' respectively.
     '''
     
     def __init__(self,name,points,translations=None,vectors=[],nneighbour=1,priority='NSCO'):
         '''
-        There are 2 ways to initialize a lattice instance:
-        1) Assign the points in a unit cell and the translation vectors.
-        2) Assign the points in a small cluster and the translation tuples in the form ((a1,m1),(a2,m2),...), where ai denotes a translation vector and mi is the number of slices along that direction. The corresponding super unit cell will be created and its translation vectors are assigned by the parameter vectors.
-        In both cases, the nneighbour attribute can be explicitly assigned while the reciprocals and bonds attributes will be automatically generated.
+        Constructor.
+        It can be used in the following ways:
+        1) Lattice(name=...,points=...,translations=...,vectors=...,nneighbour=...,priority=...)
+        2) Lattice(name=...,points=...,vectors=...,nneighbour=...,priority=...)
+        Parameters:
+            name: string
+                The name of the lattice.
+            points: list of Point
+                Two cases:
+                1) translations is None: the lattice points in a unit cell.
+                2) translations is not None: the original translated points.
+            translations: list of 2-tuple, optional
+                For each tuple:
+                    tuple[0]: 1D ndarray
+                        The translation vector for the original points.
+                    tuple[1]: integer
+                        The number of slices along the corresponding vector.
+            vectors: list of 1D ndarray, optional
+                The translation vectors of the lattice.
+            nneighbour: integer, optional
+                The highest order of neighbours.
+            priority: string, optional
+                The sequence priority of the allowed indices that can be defined on this lattice.
         '''
         self.name=name
         self.points={}
@@ -86,7 +117,7 @@ class Lattice(object):
 
     def table(self,nambu=False):
         '''
-        Return all the allowed indices that can be defined on this lattice.
+        Return a Table instance that contains all the allowed indices which can be defined on this lattice.
         '''
         result=[]
         for point in self.points.itervalues():
@@ -101,8 +132,19 @@ class Lattice(object):
 
 def bonds(points,vectors=None,nneighbour=1):
     '''
-    Return all the bonds up to the nneighbour-th neighbour within the input cluster whose points are assigned. If the vectors are non-empty, the inter cluster bonds will be included too.
-    Note: the input points will be included in the returned list as the zero-th neighbour bonds.
+    This function returns all the bonds up to the nneighbour-th order.
+    Parameters:
+        points: dict of Point
+            The cluster within which the bonds are looked for. 
+            If the parameter vectors is not None, the inter cluster bonds will also be searched.
+        vectors: list of 1D ndarray, optional
+            The translation vectors for the cluster.
+        nneighbour: integer, optional
+            The highest order of neighbour to be searched.
+    Returns:
+        result: list of list of Bond
+            result[k] contains all the k-th neighbour bonds.
+            Note that the input points will be taken as both the start points and end points of the zero-th neighbour bonds.
     '''
     nvectors=len(vectors)
     ndim=list(points.itervalues())[0].rcoord.shape[0]
@@ -160,7 +202,7 @@ def bonds(points,vectors=None,nneighbour=1):
 
 def reciprocals(vectors):
     '''
-    Return the corresponding reciprocals dual to the input vectors.
+    This function returns the corresponding reciprocals dual to the input vectors.
     '''
     result=[]
     nvectors=len(vectors)
@@ -189,6 +231,20 @@ def reciprocals(vectors):
 def SuperLattice(name,sublattices,vectors=[],nneighbour=1,priority='NSCO'):
     '''
     This function returns the union of sublattices.
+    Parameters:
+        name: string
+            The name of the super-lattice.
+        sublattices: list of Lattice
+            The sub-lattices of the super-lattice.
+        vectors: list of 1D ndarray, optional
+            The translation vectors of the super-lattice.
+        nneighbour: integer,optional
+            The highest order of neighbours.
+        priority: string, optional
+            The sequence priority of the allowed indices that can be defined on this super-lattice.
+    Returns:
+        result: Lattice
+            The super-lattice.
     '''
     result=object.__new__(Lattice)
     result.name=name
@@ -206,6 +262,17 @@ def SuperLattice(name,sublattices,vectors=[],nneighbour=1,priority='NSCO'):
 def points_shifted(points,vector,scope=None):
     '''
     This function returns the translated points.
+    Parameters:
+        points: list of Point
+            The original points.
+        vector: 1D ndarray
+            The translation vector.
+        scope: string, optional
+            The scope of the translated points.
+            When it is None, the translated points share the same scope with the original ones'.
+    Returns:
+        result: list of Point
+            The translated points.
     '''
     result=[]
     for p in points:
