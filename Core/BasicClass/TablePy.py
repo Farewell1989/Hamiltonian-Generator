@@ -1,11 +1,21 @@
-from IndexPy import *
+'''
+Table.
+'''
 class Table(dict):
     '''
-    The Table class provides the methods to get an index from its sequence number or vice versa.
+    This class provides the methods to get an index from its sequence number or vice versa.
     '''
     def __init__(self,indices=[],dict={},f=None):
         '''
-        If the function f is assigned, the sequence number corresponding to a index will be set by f. Otherwise it equals the index's order in the indices list. An ordinary dictionary can also be used to initialize an instance.
+        Constructor.
+        Parameters:
+            indices: list of Index
+                The indices that need to be mapped to sequences.
+            dict: dict, optional
+                An already constructed index-sequence table.
+            f: function, optional
+                The function used to map an index to a sequence.
+                If it is None, the order of the index in indices will be used as its sequence number.
         '''
         for i,v in enumerate(indices):
             if f==None:
@@ -16,7 +26,7 @@ class Table(dict):
            
 def union(**kwargs):
     '''
-    Define the union of index-sequence tables.
+    This function returns the union of index-sequence tables.
     '''
     result=Table()
     sum=0
@@ -33,7 +43,7 @@ def union(**kwargs):
 
 def subset(table,mask):
     '''
-    Define a certain subset of a sequence table according to the mask function.
+    This function returns a certain subset of an index-sequence table according to the mask function.
     '''
     result=Table()
     result['_superset']=table
@@ -48,7 +58,7 @@ def subset(table,mask):
     
 def reverse_table(table):
     '''
-    Generate the sequence-index table for a reversed lookup.
+    This function returns the sequence-index table for a reversed lookup.
     '''
     result=Table()
     for k,v in table.iteritems():
