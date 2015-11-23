@@ -1,29 +1,34 @@
+'''
+Engine and App.
+'''
 from NamePy import *
 import time
 class Engine(object):
     '''
-    Class Engine is the parent class for all classes of Hamiltonian-based algorithms. It has the following attributes:
-    1) din: the directory where its needed data comes from;
-    2) dout: the directory where its generated data writes to;
-    3) waiting_list: the names of apps waiting to be run;
-    4) apps: a dict containing all apps associated with this engine. 
-    Note that not all apps are in the waiting list because some of them are actually called by others and do not need automatic running.
+    This class is the base class for all Hamiltonian-oriented classes.
+    Attributes:
+        din: string
+            The directory where the program reads data.
+        dout: string
+            The directory where the program writes data.
+        name: Name
+            The name of this engine.
+            This attribute is used for the auto-naming of data files to be read or written.
+        waiting_list: list
+            The names of apps waiting to be run.
+        apps: dict
+            This dict contains all apps added to this engine.
+            Note not all apps are in the waiting list.
     '''
 
     def __new__(cls,*arg,**karg):
+        '''
+        This method automatically initialize the attributes of an Engine instance.
+        '''
         result=object.__new__(cls,*arg,**karg)
-        if 'din' in karg:
-            result.din=karg['din']
-        else:
-            result.din='.'
-        if 'dout' in karg:
-            result.dout=karg['dout']
-        else:
-            result.dout='.'
-        if 'name' in karg:
-            result.name=Name(prefix=karg['name'],suffix=result.__class__.__name__)
-        else:
-            result.name=Name(suffix=result.__class__.__name__)
+        result.din=karg['din'] if 'din' in karg else '.'
+        result.dout=karg['dout'] if 'dout' in karg else '.'
+        result.name=Name(prefix=karg['name'],suffix=result.__class__.__name__) if 'name' in karg else Name(suffix=result.__class__.__name__)
         if 'parameters' in karg:
             result.name.update(const=karg['parameters'])
         result.waiting_list=[]
@@ -35,7 +40,14 @@ class Engine(object):
 
     def addapps(self,name=None,app=None):
         '''
-        Add an app to the app dict with its key equals the parameter name if assigned or otherwise the app's type name. Unless the parameter name is assigned, it will not go into the waiting list.
+        This method adds an app to self's attribute apps.
+        Parameters:
+            name: string,optional
+                The name of the app.
+                When this parameter is not None, it will be used as the key in self.apps. Whereas the app's class name will be used instead.
+            app: App
+                The app to be added.
+                Only when the parameter name is not None will this apps goes into self.waiting_list.
         '''
         if name!=None:
             self.apps[name]=app
@@ -45,7 +57,17 @@ class Engine(object):
 
     def runapps(self,name=None,clock=False):
         '''
-        Run a specific app if the parameter name if assigned otherwise run all the apps whose names are contained in the waiting list in order. In the former case, an extra parameter clock can be used to determine whether the engine records the time the app consumes. In the latter case, the consumed time is recorded for every app in the waiting list respectively.
+        This method can be used in two different ways:
+        1) self.runapps(name=...,clock=...)
+            In this case, the app specified by the parameter name will be run.
+        2) self.rundapps()
+            In this case, the apps specified by those in self.waiting_list will be run.
+        Parameters:
+            name: string,optional
+                The name to specify the app to be run.
+            clock: logical, optional
+                A flag to tell the program whether or not to record the time each run app consumed.
+                Note for case 2, this parameter is omitted since the time each app in self.waiting_list costs is automatically recorded.
         '''
         if name!=None:
             if clock :
@@ -64,39 +86,33 @@ class Engine(object):
 
 class App(object):
     '''
-    Class App is the parent class for all classes of specific tasks based on the Engine. It has the following attributes:
-    1) plot: whether the results are to be plotted;
-    2) show: whether the plotted graph is to be shown;
-    3) parallel: whether the calculating process is parallel;
-    4) np: the number of processes used in parallel computing, and 0 means the available maximum;
-    5) save_data: whether the generated data is to be saved on the hard drive;
-    6) run: the function called by the engine to carry out the tasks, which should be complemented by the inherited engine.
+    This class is the base class for those implementing specific tasks based on Engines.
+    Attributes:
+        plot: logical
+            A flag to tag whether the results are to be plotted.
+        show: logical
+            A flag to tag whether the plotted graph is to be shown.
+        parallel: logical
+            A flag to tag whether the calculating process is to be paralleled.
+        np: integer
+            The number of processes used in parallel computing and 0 means the available maximum.
+        save_data: logical
+            A flag to tag whether the generated result data is to be saved on the hard drive.
+        run: function
+            The function called by the engine to carry out the tasks, which should be implemented by the inheriting class of Engine.
     '''
     
     def __new__(cls,*arg,**karg):
+        '''
+        This method automatically initialize the attributes of an App instance.
+        '''
         result=object.__new__(cls,*arg,**karg)
-        if 'plot' in karg:
-            result.plot=karg['plot']
-        else:
-            result.plot=True
-        if 'show' in karg:
-            result.show=karg['show']
-        else:
-            result.show=True
-        if 'parallel' in karg:
-            result.parallel=karg['parallel']
-        else:
-            result.parallel=False
-        if 'np' in karg:
-            result.np=karg['np']
-        else:
-            result.np=0
-        if 'save_data' in karg:
-            result.save_data=karg['save_data']
-        else:
-            result.save_data=True
-        if 'run' in karg and callable(karg['run']):
-            result.run=karg['run']
+        result.plot=karg['plot'] if 'plot' in karg else True
+        result.show=karg['show'] if 'show' in karg else True
+        result.parallel=karg['parallel'] if 'parallel' in karg else False
+        result.np=karg['np'] if 'np' in karg else 0
+        result.save_data=karg['save_data'] if 'save_data' in karg else True
+        if 'run' in karg: result.run=karg['run']
         return result
 
     def __init__(self,*arg,**karg):

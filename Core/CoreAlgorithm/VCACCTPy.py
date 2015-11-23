@@ -84,8 +84,6 @@ class VCACCT(VCA):
 
     def gf(self,omega=None):
         buff=[]
-        #for sub_onr in [self.subsystems[key] for key in sorted(list(self.subsystems.iterkeys()))]:
-        #    buff.append(sub_onr.gf(omega))
         for group in self.groups.itervalues():
             buff.extend([self.subsystems[group[0]].gf(omega)]*len(group))
         return block_diag(*buff)
@@ -93,9 +91,6 @@ class VCACCT(VCA):
 def VCACCTGFC(engine,app):
     buff=deepcopy(app)
     buff.run=ONRGFC
-    #for sub_onr in engine.subsystems.itervalues():
-    #    sub_onr.addapps('GFC',buff)
-    #    sub_onr.runapps('GFC')
     for group in engine.groups.itervalues():
         for i,name in enumerate(group):
             if i==0:
