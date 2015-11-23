@@ -1,3 +1,6 @@
+'''
+Tight binding approximation.
+'''
 from Hamiltonian.Core.BasicClass.AppPackPy import *
 from Hamiltonian.Core.BasicClass.QuadraticPy import *
 from Hamiltonian.Core.BasicClass.GeneratorPy import *
@@ -5,20 +8,33 @@ from Hamiltonian.Core.BasicClass.NamePy import *
 from Hamiltonian.Core.BasicAlgorithm.BerryCurvaturePy import *
 from scipy.linalg import eigh
 import matplotlib.pyplot as plt 
+
 class TBA(Engine):
     '''
-    The TBA class provides a general algorithm to calculate physical quantities of non-interacting systems based on the tight-binding approximation. The BdG systems, i.e. phenomenological superconducting systems based on mean-field theory are also supported in a unified way. Apart from those inherited from its parent class Engine, TBA has the following attributes:
-    1) filling: the filling factor of the system;
-    2) mu: the chemical potential of the system;
-    3) lattice: the lattice of the system;
-    4) terms: the terms of the systems;
-    5) generator: the operator generator;
-    Supported apps and the corresponding run methods include:
-    1) EB (energy bands) with method TBAEB,
-    2) DOS (density of states) with TBADOS.
+    This class provides a general algorithm to calculate physical quantities of non-interacting systems based on the tight-binding approximation.
+    The BdG systems, i.e. phenomenological superconducting systems based on mean-field theory are also supported in a unified way.
+    Attributes:
+        filling: float
+            The filling factor of the system.
+        mu: float
+            The chemical potential of the system.
+        lattice: Lattice
+            The lattice of the system.
+        terms: list of Term
+            The terms of the system.
+        generator: Generator
+            The operator generator.
+    Supported methods include:
+        1) TBAEB: calculate the energy bands.
+        2) TBADOS: calculate the density of states.
+        3) TBACP: calculate the chemical potential.
+        4) TBACN: calculate the Chern number and Berry curvature.
     '''
     
     def __init__(self,filling=0,mu=0,lattice=None,terms=None,nambu=False,**karg):
+        '''
+        Constructor.
+        '''
         self.filling=filling
         self.mu=mu
         self.lattice=lattice
@@ -27,6 +43,17 @@ class TBA(Engine):
         self.name.update(const=self.generator.parameters['const'])
 
     def matrix(self,k=[],**karg):
+        '''
+        This method returns the matrix representation of the Hamiltonian.
+        Parameters:
+            k: 1D array-like, optional
+                The coords of a point in K-space.
+            karg: dict, optional
+                Other parameters.
+        Returns:
+            result: 2D ndarray
+                The matrix representation of the Hamiltonian.
+        '''
         self.generator.update(**karg)
         nmatrix=len(self.generator.table)
         result=zeros((nmatrix,nmatrix),dtype=complex128)
@@ -39,13 +66,22 @@ class TBA(Engine):
         result+=conjugate(result.T)
         return result
 
-    def eigvals(self,kspace=None):
+    def eigvals(self,basespace=None):
+        '''
+        This method returns all the eigenvalues of the Hamiltonian.
+        Parameters:
+            basespace: BaseSpace, optional
+                The base space on which the Hamiltonian is defined.
+        Returns:
+            result: 1D ndarray
+                All the eigenvalues.
+        '''
         nmatrix=len(self.generator.table)
-        result=zeros(nmatrix*(1 if kspace==None else product(kspace.rank.values())))
-        if kspace==None:
+        result=zeros(nmatrix*(1 if basespace==None else product(basespace.rank.values())))
+        if basespace is None:
             result[...]=eigh(self.matrix(),eigvals_only=True)
         else:
-            for i,paras in enumerate(kspace()):
+            for i,paras in enumerate(basespace('*')):
                 result[i*nmatrix:(i+1)*nmatrix]=eigh(self.matrix(**paras),eigvals_only=True)
         return result
 

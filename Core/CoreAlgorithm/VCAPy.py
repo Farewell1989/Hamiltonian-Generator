@@ -287,7 +287,6 @@ def VCAGP(engine,app):
     ngf=len(engine.operators['sp'])
     app.gp=0
     fx=lambda omega: sum(log(abs(det(eye(ngf)-dot(engine.pt_mesh(app.BZ.mesh['k']),engine.gf(omega=omega*1j+engine.mu))))))
-    #for a,b,deg in app.e_degs: app.gp+=integration(fx,a,b,deg=deg)
     app.gp=quad(fx,0,float(inf))[0]
     app.gp=(engine.apps['GFC'].gse-2/engine.nspin*app.gp/(pi*app.BZ.rank['k']))/engine.clmap['seqs'].shape[1]
     app.gp=app.gp+real(sum(trace(engine.pt_mesh(app.BZ.mesh['k']),axis1=1,axis2=2))/app.BZ.rank['k']/engine.clmap['seqs'].shape[1])
