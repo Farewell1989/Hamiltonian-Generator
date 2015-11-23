@@ -30,7 +30,7 @@ class FLQT(TBA):
             result: 2D ndarray
                 The matrix representation of the time evolution operator.
         '''
-        nmatrix=len(self.generator.table)
+        nmatrix=len(self.generators['h'].table)
         result=eye(nmatrix,dtype=complex128)
         nt=len(t)
         for i,time in enumerate(t):
@@ -39,7 +39,7 @@ class FLQT(TBA):
         return result
 
 def FLQTEB(engine,app):
-    nmatrix=len(engine.generator.table)
+    nmatrix=len(engine.generators['h'].table)
     if app.path!=None:
         result=zeros((app.path.rank,nmatrix+1))
         key=app.path.mesh.keys()[0]

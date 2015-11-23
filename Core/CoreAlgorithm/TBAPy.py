@@ -22,8 +22,9 @@ class TBA(Engine):
             The lattice of the system.
         terms: list of Term
             The terms of the system.
-        generator: Generator
-            The operator generator.
+        generators: dict of Generator
+            The operator generators, which has the following entries:
+            1) entry 'h': the generator for the Hamiltonian.
     Supported methods include:
         1) TBAEB: calculate the energy bands.
         2) TBADOS: calculate the density of states.
@@ -39,8 +40,9 @@ class TBA(Engine):
         self.mu=mu
         self.lattice=lattice
         self.terms=terms
-        self.generator=Generator(bonds=lattice.bonds,table=lattice.table(nambu),terms=terms,nambu=nambu,half=True)
-        self.name.update(const=self.generator.parameters['const'])
+        self.generators={}
+        self.generators['h']=Generator(bonds=lattice.bonds,table=lattice.table(nambu),terms=terms,nambu=nambu,half=True)
+        self.name.update(const=self.generators['h'].parameters['const'])
 
     def matrix(self,k=[],**karg):
         '''
@@ -54,13 +56,13 @@ class TBA(Engine):
             result: 2D ndarray
                 The matrix representation of the Hamiltonian.
         '''
-        self.generator.update(**karg)
-        nmatrix=len(self.generator.table)
+        self.generators['h'].update(**karg)
+        nmatrix=len(self.generators['h'].table)
         result=zeros((nmatrix,nmatrix),dtype=complex128)
-        for opt in self.generator.operators:
+        for opt in self.generators['h'].operators:
             phase=1 if len(k)==0 else exp(-1j*inner(k,opt.rcoords[0]))
             result[opt.seqs]+=opt.value*phase
-            if self.generator.nambu:
+            if self.generators['h'].nambu:
                 i,j=opt.seqs
                 if i<nmatrix/2 and j<nmatrix/2: result[j+nmatrix/2,i+nmatrix/2]+=-opt.value*conjugate(phase)
         result+=conjugate(result.T)
@@ -76,7 +78,7 @@ class TBA(Engine):
             result: 1D ndarray
                 All the eigenvalues.
         '''
-        nmatrix=len(self.generator.table)
+        nmatrix=len(self.generators['h'].table)
         result=zeros(nmatrix*(1 if basespace==None else product(basespace.rank.values())))
         if basespace is None:
             result[...]=eigh(self.matrix(),eigvals_only=True)
@@ -86,7 +88,7 @@ class TBA(Engine):
         return result
 
 def TBAEB(engine,app):
-    nmatrix=len(engine.generator.table)
+    nmatrix=len(engine.generators['h'].table)
     if app.path!=None:
         key=app.path.mesh.keys()[0]
         result=zeros((app.path.rank[key],nmatrix+1))
@@ -130,7 +132,7 @@ def TBADOS(engine,app):
         plt.close()
 
 def TBACP(engine,app):
-    nelectron=int(round(engine.filling*app.BZ.rank['k']*len(engine.generator.table)))
+    nelectron=int(round(engine.filling*app.BZ.rank['k']*len(engine.generators['h'].table)))
     eigvals=sort((engine.eigvals(app.BZ)))
     app.mu=(eigvals[nelectron]+eigvals[nelectron-2])/2
     engine.mu=app.mu
