@@ -1,18 +1,39 @@
+'''
+Operator.
+'''
 from IndexPy import *
 from BasicGeometryPy import *
 from copy import deepcopy
 class Operator:
     '''
-    The Operator class gives a unified description of different operators with different ranks or types. It has the following attributes:
-    1) mode: used to distinguish different types or ranks of operators;
-    2) value: the overall coefficient of the operator;
-    3) indices: associated indices of the operator, whose length should be equal to the operator's rank;
-    4) rcoords: associated real coordinates of the operator;
-    5) icoords: associated lattice coordinates of the operator;
-    6) seqs: associated sequences of the operator, whose length should be equal to the operator's rank.
+    This class gives a unified description of different operators with different ranks or types.
+    Attributes:
+    mode: string
+        The tag used to distinguish operators with different types or ranks.
+    value: float or complex
+        The overall coefficient of the operator.
+    indices: list of Index
+        The associated indices of the operator, whose length should be equal to the operator's rank;
+    rcoords: list of 1D ndarray
+        The associated real coordinates of the operator.
+    icoords: list of 1D ndarray
+        The associated lattice coordinates of the operator.
+    seqs: tuple of integer
+        The associated sequences of the operator, whose length should be equal to the operator's rank.
     Note: 
-    1) The lengths of rcoords and icoords are not forced to be equal to the operator's rank because firstly, some of its rank-1 terms may share the same rcoord or icoord, and secondly, the rcoords and icoords is the whole operator's property instead of each of its rank-1 component. However, for a set of operators with the same attribute mode, the lengths of their rcoords and icoords should be fixed and equal to each other respectively.
-    2) Current supported modes include 'e_linear'(rank=1 electron operators), 'e_quadratic'(rank=2 electron operators) and 'e_hubbard'(rank=4 electron operators).For e_quadratic, only one rcoord and icoord is needed because a quadratic operator is always defined on a bond and only the bond's rcoord and icoord is needed. For 'e_hubbard', likewise, only one rcoord and icoord is needed because Hubbard terms are always on-site ones.
+    1) The lengths of rcoords and icoords are not forced to be equal to the operator's rank because:
+        (1) some of its rank-1 terms may share the same rcoord or icoord, and 
+        (2) the rcoords and icoords is the whole operator's property instead of each of its rank-1 component.
+       However, for a set of operators with the same attribute mode, the lengths of their rcoords and icoords should be fixed and equal to each other respectively.
+    2) Current supported modes include:
+        (1) 'e_linear':
+            rank==1 electron operators.
+        (2) 'e_quadratic':
+            rank==2 electron operators.
+            For this mode, only one rcoord and one icoord are needed which are identical to the bond's rcoord and icoord where the quadratic operator is defined.
+        (3) 'e_hubbard':
+            rank==4 electron operators..
+            For this mode, only one rcoord and icoord is needed because Hubbard operators are always on-site ones.
     '''
     
     def __init__(self,mode,value,indices,rcoords,icoords,seqs):
@@ -111,7 +132,7 @@ class Operator:
 
     def is_combinable(self,other):
         '''
-        Judge whether two operators are combinable.
+        Judge whether or not two operators are combinable.
         '''
         if self.mode==other.mode and len(self.rcoords)==len(other.rcoords) and len(self.icoords)==len(other.icoords):
             for v1,v2 in zip(self.rcoords,other.rcoords):
@@ -159,7 +180,7 @@ def E_Hubbard(value,indices,rcoords,icoords,seqs):
 
 class OperatorList(list):
     '''
-    OperatorList, which can pack several operators as a whole for convenience.
+    This class packs several operators as a whole for convenience.
     '''
     
     def __init__(self):
