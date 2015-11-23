@@ -1,4 +1,5 @@
 from Hamiltonian.Core.BasicClass.TablePy import *
+from Hamiltonian.Core.BasicClass.IndexPy import *
 def test_table():
     test_table_body()
     test_table_functions_index()
