@@ -1,17 +1,32 @@
+'''
+Hubbard (onsite) interaction terms.
+'''
 from IndexPy import *
 from OperatorPy import *
 from TermPy import *
 from BondPy import *
 from TablePy import *
+
 class Hubbard(Term):
     '''
-    Class Hubbard provides a complete description of single orbital and multi orbital Hubbard interactions.
-    1) value: an array with len=1 for single orbital systems and len=3 for multi orbital systems. For multi orbital systems, the interactions include intra-orbital, inter-orbital, spin flip and pair hopping terms.
-    2) atom: the atom index of the point where the Hubbard interactions are defined.
+    This class provides a complete description of single orbital and multi orbital Hubbard interactions.
+    Attributes:
+        value: float or 1D array-like, inherited from Term
+            float: single-orbital Hubbard interaction.
+            1D array-like: multi-orbital Hubbard interaction and the length must be 3.
+                value[0]: intra-orbital interaction 
+                value[1]: inter-orbital interaction
+                value[2]: spin-flip and pair-hopping interaction
+        atom: integer 
+            The atom index of the point where the Hubbard interactions are defined.
     '''
+
     def __init__(self,tag,value,atom=None,modulate=None):
+        '''
+        Constructor.
+        '''
         super(Hubbard,self).__init__('hb',tag,value,modulate)
-        if not atom is None: self.atom=atom
+        if atom is not None: self.atom=atom
 
     def __str__(self):
         '''
@@ -44,7 +59,7 @@ class Hubbard(Term):
 
     def mesh(self,bond,dtype=float64):
         '''
-        Generate the mesh of Hubbard terms.
+        This method returns the mesh of Hubbard terms.
         '''
         ndim=bond.epoint.norbital*bond.epoint.nspin
         result=zeros((ndim,ndim,ndim,ndim),dtype=dtype)
@@ -99,9 +114,8 @@ class Hubbard(Term):
 
 class HubbardList(list):
     '''
-    The HubbardList class pack several Hubbard instances as a whole for convenience.
+    This class pack several Hubbard instances as a whole for convenience.
     '''
-    
     def __init__(self,*arg):
         self.mode='hb'
         for obj in arg:
@@ -148,7 +162,7 @@ class HubbardList(list):
 
     def mesh(self,bond,dtype=float64):
         '''
-        Generate the mesh of all Hubbard terms defined on a bond.
+        This method returns the mesh of all Hubbard terms defined on a bond.
         '''
         if bond.epoint.nspin==2 and bond.spoint.nspin==2:
             ndim=bond.epoint.norbital*bond.epoint.nspin
@@ -162,9 +176,22 @@ class HubbardList(list):
 
     def operators(self,bond,table,half=True,dtype=float64):
         '''
-        Generate the set of non-zero operators defined on the input bond.
-        1) The index sequences are determined by the index-sequence table. Since Hubbard terms are quartic and cannot be represented in lattice representations, the sequences will never be in the Nambu space.
-        2) Because of the hermiticity of the Hamiltonian, when the parameter 'half' is set to be true, only one half of the set is returned. Note that the coefficient of the self-hermitian operators is also divided by a factor 2 so that the whole set exactly equals the returned set plus its Hermitian conjugate. The half=False case is not supported yet.
+        This method returns all the Hubbard operators defined on the input bond with non-zero coefficients.
+        Parameters:
+            bond: Bond
+                The bond on which the Hubbard terms is defined.
+            table: Table
+                The index-sequence table.
+                Since Hubbard terms are quartic, it never uses the Nambu space.
+            half: logical,optional
+                When it is set to be True, only one half of the Hubbard operators is returned.
+                Note that the coefficient of the self-hermitian operators is also divided by a factor 2.
+                The half==False case is not supported yet.
+            dtype: dtype,optional
+                The data type of the coefficient of the returned operators.
+        Returns:
+            result: OperatorList
+                All the Hubbard operators with non-zero coeffcients.
         '''
         result=OperatorList()
         buff=self.mesh(bond,dtype=dtype)
