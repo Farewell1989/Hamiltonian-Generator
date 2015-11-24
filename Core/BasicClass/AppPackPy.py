@@ -62,6 +62,11 @@ class OP(App):
         self.BZ=BZ
         self.op=0
 
+    def matrix(self,bonds,table,nambu):
+        '''
+        '''
+        pass
+
 class CP(App):
     '''
     Chemical potential.
