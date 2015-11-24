@@ -48,6 +48,9 @@ for arg in sys.argv:
     if arg in ('tba','all'):
         from Test.TBA import *
         test_tba()
+    if arg in ('scmf','all'):
+        from Test.SCMF import *
+        test_scmf()
     if arg in ('flqt','all'):
         from Test.FLQT import *
         test_flqt()
