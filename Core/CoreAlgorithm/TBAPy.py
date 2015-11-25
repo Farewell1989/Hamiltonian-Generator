@@ -22,6 +22,8 @@ class TBA(Engine):
             The lattice of the system.
         terms: list of Term
             The terms of the system.
+        nambu: logical
+            A flag to tag whether the Nambu space is used.
         generators: dict of Generator
             The operator generators, which has the following entries:
             1) entry 'h': the generator for the Hamiltonian.
@@ -40,6 +42,7 @@ class TBA(Engine):
         self.mu=mu
         self.lattice=lattice
         self.terms=terms
+        self.nambu=nambu
         self.generators={}
         self.generators['h']=Generator(bonds=lattice.bonds,table=lattice.table(nambu),terms=terms,nambu=nambu,half=True)
         self.name.update(const=self.generators['h'].parameters['const'])
@@ -68,6 +71,23 @@ class TBA(Engine):
         result+=conjugate(result.T)
         return result
 
+    def matrices(self,basespace=None,mode='*'):
+        '''
+        This method returns a generator which iterates over all the Hamiltonians living on the input basespace.
+        Parameters:
+            basespace: BaseSpace,optional
+                The base space on which the Hamiltonians lives.
+            mode: string,optional
+                The mode which the generators takes to iterate over the base space.
+        Returns:
+            yield a 2D ndarray.
+        '''
+        if basespace is None:
+            yield self.matrix()
+        else:
+            for paras in basespace(mode):
+                yield self.matrix(**paras)
+
     def eigvals(self,basespace=None):
         '''
         This method returns all the eigenvalues of the Hamiltonian.
@@ -86,6 +106,11 @@ class TBA(Engine):
             for i,paras in enumerate(basespace('*')):
                 result[i*nmatrix:(i+1)*nmatrix]=eigh(self.matrix(**paras),eigvals_only=True)
         return result
+
+    def set_mu(self,kspace=None):
+        nelectron=int(round(self.filling*(1 if kspace is None else kspace.rank['k'])*len(self.generators['h'].table)))
+        eigvals=sort((self.eigvals(kspace)))
+        self.mu=(eigvals[nelectron]+eigvals[nelectron-2])/2
 
 def TBAEB(engine,app):
     nmatrix=len(engine.generators['h'].table)
