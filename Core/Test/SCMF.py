@@ -14,7 +14,7 @@ def haldane_hopping(bond):
     return result
 
 def test_scmf():
-    U=3.375
+    U=3.13
     t1=-1.0
     t2=0.1
     H2=HexagonDataBase('H2',norbital=1,nspin=2,nnambu=1)
@@ -30,11 +30,11 @@ def test_scmf():
                     #Onsite('stagger',0.2,indexpackages=sigmaz('sl'))
                     ],
         orders=     [
-                    Onsite('afm',0.5,indexpackages=sigmaz('sp')*sigmaz('sl'),modulate=lambda **karg: -U*karg['afm']/2 if 'afm' in karg else None)
+                    Onsite('afm',0.2,indexpackages=sigmaz('sp')*sigmaz('sl'),modulate=lambda **karg: -U*karg['afm']/2 if 'afm' in karg else None)
                     ],
         nambu=      False
         )
     h2.iterate(KSpace(reciprocals=h2.lattice.reciprocals,nk=100),error=10**-5,n=400)
-    h2.addapps('EB',EB(hexagon_gkm(nk=100),save_data=False,plot=True,show=True,run=TBAEB))
-    h2.addapps('CN',CN(KSpace(reciprocals=h2.lattice.reciprocals,nk=200),d=10**-6,save_data=False,plot=False,show=True,run=TBACN))
+    #h2.addapps('EB',EB(hexagon_gkm(nk=100),save_data=False,plot=True,show=True,run=TBAEB))
+    #h2.addapps('CN',CN(KSpace(reciprocals=h2.lattice.reciprocals,nk=200),d=10**-6,save_data=False,plot=False,show=True,run=TBACN))
     h2.runapps()

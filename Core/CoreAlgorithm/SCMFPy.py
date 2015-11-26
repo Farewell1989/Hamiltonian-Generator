@@ -2,7 +2,7 @@
 Simple self-consistent mean field theory.
 '''
 from TBAPy import *
-from scipy.optimize import broyden1
+from scipy.optimize import broyden1,broyden2
 class op:
     '''
     '''
@@ -58,30 +58,30 @@ class SCMF(TBA):
         for key in self.ops.keys():
             self.ops[key].value=sum(buff*self.ops[key].matrix)/(nstate/nspin)
 
-    #def iterate(self,kspace=None,error=10**-4,n=200):
-    #    stime=time.time()
-    #    err,count=inf,0
-    #    op_old=array([self.ops[key].value for key in self.ops.keys()])
-    #    while err>=error:
-    #        count+=1
-    #        if count==1:
-    #            self.update_ops(kspace)
-    #            op_new=array([self.ops[key].value for key in self.ops.keys()])
-    #            gx_old=op_new
-    #        elif count>n:
-    #            raise ValueError("SCMF iterate error: the iterations has exceeded the max step.")
-    #        else:
-    #            self.update_ops(kspace)
-    #            gx_new=array([self.ops[key].value for key in self.ops.keys()])-op_new
-    #            buff=op_new-(op_new-op_old)/(gx_new-gx_old)*gx_new
-    #            op_old=op_new
-    #            op_new=buff
-    #            gx_old=gx_new
-    #            err=max(abs(op_old-op_new))
-    #        print 'Step,op,error: ',count,',',op_old,err
+    def iterate_sec(self,kspace=None,error=10**-4,n=200):
+        stime=time.time()
+        err,count=inf,0
+        op_old=array([self.ops[key].value for key in self.ops.keys()])
+        while err>=error:
+            count+=1
+            if count==1:
+                self.update_ops(kspace)
+                op_new=array([self.ops[key].value for key in self.ops.keys()])
+                gx_old=op_new
+            elif count>n:
+                raise ValueError("SCMF iterate error: the iterations has exceeded the max step.")
+            else:
+                self.update_ops(kspace)
+                gx_new=array([self.ops[key].value for key in self.ops.keys()])-op_new
+                buff=op_new-(op_new-op_old)/(gx_new-gx_old)*gx_new
+                op_old=op_new
+                op_new=buff
+                gx_old=gx_new
+                err=max(abs(op_old-op_new))
+            print 'Step,op,error: ',count,',',op_old,err
         #print 'Order parameters:',op_old
-    #    etime=time.time()
-    #    print 'Iterate: time consumed ',etime-stime,'s.'
+        etime=time.time()
+        print 'Iterate: time consumed ',etime-stime,'s.'
 
     def iterate(self,kspace=None,error=10**-4,n=200):
         stime=time.time()
@@ -91,7 +91,7 @@ class SCMF(TBA):
             self.update_ops(kspace)
             return array([self.ops[key].value for key in self.ops.keys()])-values
         x0=array([self.ops[key].value for key in self.ops.keys()])
-        buff=broyden1(gx,x0,verbose=True,maxiter=n,x_tol=error)
+        buff=broyden2(gx,x0,verbose=True,reduction_method='svd',maxiter=n,x_tol=error)
         print 'Order parameters:',buff
         etime=time.time()
         print 'Iterate: time consumed ',etime-stime,'s.'
