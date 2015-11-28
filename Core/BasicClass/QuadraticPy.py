@@ -74,7 +74,7 @@ class Quadratic(Term):
         '''
         Overloaded operator(+), which supports the addition of a Quadratic instance with a Quadratic/QuadraticList instance.
         '''
-        result=QuadraticList(self.mode)
+        result=QuadraticList()
         result.append(deepcopy(self))
         if isinstance(other,Quadratic):
             result.append(deepcopy(other))

@@ -46,13 +46,13 @@ class IndexPackage:
         if spin1 is not None and spin2 is not None: self.spins=array([spin1,spin2])
         if atoms is not None:
             if len(atoms)==2: self.atoms=array(atoms)
-            elif len(atoms)==1: self.atoms=array([atoms,atoms])
+            elif len(atoms)==1: self.atoms=array([atoms[0],atoms[0]])
         if orbitals is not None:
             if len(orbitals)==2: self.orbitals=array(orbitals)
-            elif len(orbitals)==1: self.orbitals=array([orbitals,orbitals])
+            elif len(orbitals)==1: self.orbitals=array([orbitals[0],orbitals[0]])
         if spins is not None:
             if len(spins)==2: self.spins=array(spins)
-            elif len(spins)==1: self.spins=array([spins,spins])
+            elif len(spins)==1: self.spins=array([spins[0],spins[0]])
 
     def __str__(self):
         '''
