@@ -38,7 +38,7 @@ def test_super_lattice():
     a2=array([0.0,2.0])
     a=SuperLattice(
         name='Super',
-        sublattices=[Lattice(name='sub'+str(i),points=points_shifted(points,a1*i,scope='sub'+str(i))) for i in xrange(m)],
+        sublattices=[Lattice(name='sub'+str(i),points=translation(points,a1*i,scope='sub'+str(i))) for i in xrange(m)],
         vectors=[a1*m,a2],
         nneighbour=2
         )

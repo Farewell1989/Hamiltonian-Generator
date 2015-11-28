@@ -259,7 +259,7 @@ def SuperLattice(name,sublattices,vectors=[],nneighbour=1,priority='NSCO'):
     result.sublattices=sublattices
     return result
 
-def points_shifted(points,vector,scope=None):
+def translation(points,vector,scope=None):
     '''
     This function returns the translated points.
     Parameters:
@@ -289,3 +289,22 @@ def points_shifted(points,vector,scope=None):
                 )
         )
     return result
+
+def rotation(points,angle,axis=None,scope=None):
+    '''
+    This function returns the rotated points.
+    Parameters:
+        points: list of Point
+            The original points.
+        angle: float
+            The rotated angle
+        axis: 1D array-like,optional
+            The rotation axis. Default the z-axis.
+        scope: string, optional
+            The scope of the rotated points.
+            When it is None, the rotated points share the same scope with the original ones'.
+    Returns:
+        result: list of Point
+            The rotated points.
+    '''
+    pass
