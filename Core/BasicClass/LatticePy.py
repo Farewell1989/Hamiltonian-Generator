@@ -290,7 +290,7 @@ def translation(points,vector,scope=None):
         )
     return result
 
-def rotation(points,angle,axis=None,scope=None):
+def rotation(points,angle,axis=None,center=None,scope=None):
     '''
     This function returns the rotated points.
     Parameters:
@@ -298,8 +298,10 @@ def rotation(points,angle,axis=None,scope=None):
             The original points.
         angle: float
             The rotated angle
-        axis: 1D array-like,optional
+        axis: 1D array-like, optional
             The rotation axis. Default the z-axis.
+        center: 1D array-like, optional
+            The center of the axis. Defualt the origin.
         scope: string, optional
             The scope of the rotated points.
             When it is None, the rotated points share the same scope with the original ones'.
@@ -307,4 +309,21 @@ def rotation(points,angle,axis=None,scope=None):
         result: list of Point
             The rotated points.
     '''
-    pass
+    result=[]
+    if axis is None: axis=array([0,0,1])
+    if center is None: center=0
+    for p in points:
+        rcoord=0
+        result.append(
+            Point(
+                scope=scope if scope is None else p.scope,
+                site=p.site,
+                rcoord=rcoord,
+                icoord=p.icoord,
+                atom=p.atom,
+                norbital=p.norbital,
+                nspin=p.nspin,
+                nnambu=p.nnambu
+                )
+        )
+    return result
