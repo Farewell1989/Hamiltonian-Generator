@@ -165,3 +165,73 @@ class Point:
             A dict in the form {'spin':...,'orbital':...,'nambu':...}
         '''
         return {'spin':seq_state%(self.norbital*self.nspin)%self.nspin,'orbital':seq_state%(self.norbital*self.nspin)/self.nspin,'nambu':seq_state/(self.norbital*self.nspin)}
+
+def translation(points,vector,scope=None):
+    '''
+    This function returns the translated points.
+    Parameters:
+        points: list of Point
+            The original points.
+        vector: 1D ndarray
+            The translation vector.
+        scope: string, optional
+            The scope of the translated points.
+            When it is None, the translated points share the same scope with the original ones'.
+    Returns:
+        result: list of Point
+            The translated points.
+    '''
+    result=[]
+    for p in points:
+        result.append(
+            Point(
+                scope=scope if scope is None else p.scope,
+                site=p.site,
+                rcoord=p.rcoord+vector,
+                icoord=p.icoord,
+                atom=p.atom,
+                norbital=p.norbital,
+                nspin=p.nspin,
+                nnambu=p.nnambu
+                )
+        )
+    return result
+
+def rotation(points,angle,axis=None,center=None,scope=None):
+    '''
+    This function returns the rotated points.
+    Parameters:
+        points: list of Point
+            The original points.
+        angle: float
+            The rotated angle
+        axis: 1D array-like, optional
+            The rotation axis. Default the z-axis.
+            Not supported yet.
+        center: 1D array-like, optional
+            The center of the axis. Defualt the origin.
+        scope: string, optional
+            The scope of the rotated points.
+            When it is None, the rotated points share the same scope with the original ones'.
+    Returns:
+        result: list of Point
+            The rotated points.
+    '''
+    result=[]
+    if center is None: center=0
+    for p in points:
+        m11=cos(angle);m21=-sin(angle);m12=-m21;m22=m11
+        rcoord=dot(array([[m11,m12],[m21,m22]]),p.rcoord-center)+center
+        result.append(
+            Point(
+                scope=scope if scope is None else p.scope,
+                site=p.site,
+                rcoord=rcoord,
+                icoord=p.icoord,
+                atom=p.atom,
+                norbital=p.norbital,
+                nspin=p.nspin,
+                nnambu=p.nnambu
+                )
+        )
+    return result
