@@ -126,7 +126,7 @@ class Point:
         '''
         return self.struct.scope+str(self.struct.site)
 
-def translation(points,vector,scope=None):
+def translation(points,vector):
     '''
     This function returns the translated points.
     Parameters:
@@ -134,21 +134,16 @@ def translation(points,vector,scope=None):
             The original points.
         vector: 1D ndarray
             The translation vector.
-        scope: string, optional
-            The scope of the translated points.
-            When it is None, the translated points share the same scope with the original ones'.
     Returns:
         result: list of Point
             The translated points.
     '''
     result=[]
     for p in points:
-        buff=Point(rcoord=p.rcoord+vector,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct))
-        if scope is not None: buff.struct.scope=scope
-        result.append(buff)
+        result.append(Point(rcoord=p.rcoord+vector,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct)))
     return result
 
-def rotation(points=None,coords=None,angle=0,axis=None,center=None,scope=None):
+def rotation(points=None,coords=None,angle=0,axis=None,center=None):
     '''
     This function returns the rotated points or coords.
     Parameters:
@@ -163,9 +158,6 @@ def rotation(points=None,coords=None,angle=0,axis=None,center=None,scope=None):
             Not supported yet.
         center: 1D array-like, optional
             The center of the axis. Defualt the origin.
-        scope: string, optional
-            The scope of the rotated points.
-            When it is None, the rotated points share the same scope with the original ones'.
     Returns:
         result: list of Point/1D ndarray
             The rotated points or coords.
@@ -181,10 +173,7 @@ def rotation(points=None,coords=None,angle=0,axis=None,center=None,scope=None):
     m=array([[m11,m12],[m21,m22]])
     if points is not None:
         for p in points:
-            rcoord=dot(m,p.rcoord-center)+center
-            buff=Point(rcoord=rcoord,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct))
-            if scope is not None: buff.struct.scope=scope
-            result.append(buff)
+            result.append(Point(rcoord=dot(m,p.rcoord-center)+center,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct)))
     if coords is not None:
         for coord in coords:
             result.append(dot(m,coord-center)+center)
