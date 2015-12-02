@@ -3,6 +3,7 @@ Basic geometry, including
 1) functions: azimuthd,azimuth,polard,polar,volume,is_parallel
 2) classes: Point
 '''
+from StructPy import *
 from numpy import *
 from numpy.linalg import norm
 from ConstantPy import RZERO
@@ -77,94 +78,53 @@ class Point:
     '''
     Structured point.
     Attributes:
-        site: integer 
-            The site index of the point, start with 0.
         rcoord: 1D ndarray
             The coordinate in real space.
         icoord: 1D ndarray
             the coordinate in lattice space.
-        atom: integer, default value 0
-            The atom species on this point.
-        norbital: integer, default value 1
-            Number of orbitals.
-        nspin: integer, default value 2
-            Number of spins.
-        nnambu: integer, default value 1.
-            An integer to indicate whether or not using the Nambu space. 1 means no and 2 means yes.
-        scope: string, default value 'None'
-            The scope to which a point belongs.
+        struct: Struct
+            The inner structure of the point.
     '''
 
-    def __init__(self,site,rcoord,icoord=None,atom=0,norbital=1,nspin=2,nnambu=1,scope=None):
+    def __init__(self,rcoord,icoord=None,struct=None):
         '''
         Constructor.
         Parameters:
-            site: integer 
-                The site index of the point.
             rcoord: 1D array-like
                 The coordinate in real space.
             icoord: 1D array-like,optional
-                the coordinate in lattice space.
-            atom: integer, optional
-                The atom species on this point.
-            norbital: integer, optional
-                Number of orbitals.
-            nspin: integer, optional
-                Number of spins.
-            nnambu: integer, optional.
-                A flag to indicate whether or not using the Nambu space. 1 means no and 2 means yes.
-            scope: string, optional
-                The scope to which a point belongs.
+                The coordinate in lattice space.
+            struct: Struct
+                The inner structure of the point.
         '''
-        self.site=site
         self.rcoord=array(rcoord)
         self.icoord=array([]) if icoord is None else array(icoord)
-        self.atom=atom
-        self.norbital=norbital
-        self.nspin=nspin
-        self.nnambu=nnambu
-        self.scope=str(scope)
+        self.struct=struct
 
     def __str__(self):
         '''
         Convert an instance to string.
         '''
-        if self.scope=='None':
-            return 'Site, atom, norbital, nspin, nnambu: '+str(self.site)+', '+str(self.atom)+', '+str(self.norbital)+', '+str(self.nspin)+', '+str(self.nnambu)+'\n'+'Rcoord: '+str(self.rcoord)+'\n'+'Icoord: '+str(self.icoord)+'\n'
-        else:
-            return 'Scope, Site, atom, norbital, nspin, nnambu: '+self.scope+', '+str(self.site)+', '+str(self.atom)+', '+str(self.norbital)+', '+str(self.nspin)+', '+str(self.nnambu)+'\n'+'Rcoord: '+str(self.rcoord)+'\n'+'Icoord: '+str(self.icoord)+'\n'
+        return str(self.struct)+'\n'+'Rcoord: '+str(self.rcoord)+'\n'+'Icoord: '+str(self.icoord)+'\n'
 
     def __eq__(self,other):
         '''
         Overloaded operator(==).
         '''
-        return self.scope==other.scope and self.site==other.site and norm(self.rcoord-other.rcoord)<RZERO and norm(self.icoord-other.icoord)<RZERO and self.atom==other.atom and self.norbital==other.norbital and self.nspin==other.nspin and self.nnambu==other.nnambu
+        return self.struct==other.struct and norm(self.rcoord-other.rcoord)<RZERO and norm(self.icoord-other.icoord)<RZERO
     
     def __ne__(self,other):
         '''
         Overloaded operator(!=).
         '''
         return not self==other
-        
-    def seq_state(self,orbital,spin,nambu):
+
+    @property
+    def tag(self):
         '''
-        This methods returns the sequence of a input state with orbital, spin and nambu index assigned.
+        This method returns a string as the tag of a structured point.
         '''
-        if nambu in (0,1):
-            return spin+orbital*self.nspin+nambu*self.norbital*self.nspin
-        else:
-            raise ValueError("Point seq_state error: the nambu index must be 0 or 1.")
-        
-    def state_index(self,seq_state):
-        '''
-        This methods returns the orbital, spin and nambu index of a state whose sequence equals the input seq_state.
-        Parameters:
-            seq_state: integer
-                The sequence of the state.
-        Returns:
-            A dict in the form {'spin':...,'orbital':...,'nambu':...}
-        '''
-        return {'spin':seq_state%(self.norbital*self.nspin)%self.nspin,'orbital':seq_state%(self.norbital*self.nspin)/self.nspin,'nambu':seq_state/(self.norbital*self.nspin)}
+        return self.struct.scope+str(self.struct.site)
 
 def translation(points,vector,scope=None):
     '''
@@ -183,20 +143,10 @@ def translation(points,vector,scope=None):
     '''
     result=[]
     for p in points:
-        result.append(
-            Point(
-                scope=scope if scope is None else p.scope,
-                site=p.site,
-                rcoord=p.rcoord+vector,
-                icoord=p.icoord,
-                atom=p.atom,
-                norbital=p.norbital,
-                nspin=p.nspin,
-                nnambu=p.nnambu
-                )
-        )
+        buff=Point(rcoord=p.rcoord+vector,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct))
+        if scope is not None: buff.struct.scope=scope
+        result.append(buff)
     return result
-
 
 def rotation(points=None,coords=None,angle=0,axis=None,center=None,scope=None):
     '''
@@ -232,18 +182,9 @@ def rotation(points=None,coords=None,angle=0,axis=None,center=None,scope=None):
     if points is not None:
         for p in points:
             rcoord=dot(m,p.rcoord-center)+center
-            result.append(
-                Point(
-                    scope=scope if scope is None else p.scope,
-                    site=p.site,
-                    rcoord=rcoord,
-                    icoord=p.icoord,
-                    atom=p.atom,
-                    norbital=p.norbital,
-                    nspin=p.nspin,
-                    nnambu=p.nnambu
-                    )
-            )
+            buff=Point(rcoord=rcoord,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct))
+            if scope is not None: buff.struct.scope=scope
+            result.append(buff)
     if coords is not None:
         for coord in coords:
             result.append(dot(m,coord-center)+center)
