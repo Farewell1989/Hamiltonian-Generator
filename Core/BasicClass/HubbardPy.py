@@ -202,5 +202,5 @@ class HubbardList(list):
             index2=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(j))
             index3=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(k))
             index4=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(l))
-            result.append(E_Hubbard(buff[i,j,k,l],indices=deepcopy([index1.dagger,index2.dagger,index3,index4]),rcoords=[bond.epoint.rcoord],icoords=bond.epoint.icoord,seqs=[table[index1],table[index2],table[index3],table[index4]]))
+            result.append(E_Hubbard(buff[i,j,k,l],indices=deepcopy([index1.dagger,index2.dagger,index3,index4]),rcoords=[bond.epoint.rcoord],icoords=[bond.epoint.icoord],seqs=[table[index1],table[index2],table[index3],table[index4]]))
         return result
