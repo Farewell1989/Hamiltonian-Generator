@@ -5,9 +5,11 @@ from IndexPy import *
 from TablePy import *
 class Struct(object):
     '''
+    This class is the base class for all inner stuctures of a point.
     '''
     def __init__(self,**karg):
         '''
+        Constructor.
         '''
         for key in karg:
             setattr(self,key,karg[key])
@@ -20,6 +22,7 @@ class Struct(object):
 
 class Fermi(Struct):
     '''
+    This class defines the fermi structure of a point.
     Attributes:
         atom: integer, default value 0
             The atom species on this point.
@@ -58,6 +61,19 @@ class Fermi(Struct):
 
     def table(self,scope,site,nambu=False,priority=None):
         '''
+        This method returns a Table instance that contains all the allowed indices which can be defined on this structure.
+        Parameters:
+            scope: string
+                The scope of the index.
+            site: integer
+                The site index.
+            nambu: logical, optional
+                A flag to tag whether or not the nambu space is used.
+            priority: function
+                The key function used to sort the indices.
+        Returns:
+            result: Table
+                The index-sequence table.
         '''
         result=[]
         if nambu:
