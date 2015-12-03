@@ -2,8 +2,8 @@ from Hamiltonian.Core.CoreAlgorithm.TBAPy import *
 from Hamiltonian.Core.BasicClass.BaseSpacePy import *
 from Hamiltonian.Core.BasicClass.LatticePy import *
 def test_tba():
-    p1=Point(site=0,rcoord=[0.0],icoord=[0.0],norbital=1,nspin=1,nnambu=2,scope='WG')
-    p2=Point(site=1,rcoord=[0.5],icoord=[0.0],norbital=1,nspin=1,nnambu=2,scope='WG')
+    p1=Point(scope='WG',site=0,rcoord=[0.0],icoord=[0.0],struct=Fermi(norbital=1,nspin=1,nnambu=2))
+    p2=Point(scope='WG',site=1,rcoord=[0.5],icoord=[0.0],struct=Fermi(norbital=1,nspin=1,nnambu=2))
     a1=array([1.0])
     a=TBA(
         name=       'WG',

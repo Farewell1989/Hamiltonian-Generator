@@ -17,12 +17,14 @@ def test_basicgeometry_functions():
     print is_parallel(a,b)
 
 def test_point():
-    a=Point(0,[0.0,0.0],[0.0,0.0])
-    b=Point(0,[0.0,0.0],[0.0,0.0],norbital=1,nspin=2,nnambu=1)
+    a=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],struct=Fermi(norbital=2))
+    b=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],struct=Fermi(norbital=2,nspin=2,nnambu=1))
     print b
     print 'b==a: ',b==a
     print 'b is a: ',b is a
-    for i in xrange(b.norbital*b.nspin*b.nnambu):
-        c=b.state_index(i)
-        print 'seq_state: ',b.seq_state(**c)
+    table=b.table(priority=lambda key: key.to_tuple(indication='PNSCO'))
+    print table
+    for i in xrange(len(table)):
+        c=b.struct.state_index(i)
+        print 'seq_state: ',b.struct.seq_state(**c)
         print c

@@ -48,7 +48,7 @@ class SCMF(TBA):
         self.set_mu(kspace)
         f=(lambda e,mu: 1 if e<=mu else 0) if abs(self.temperature)<RZERO else (lambda e,mu: 1/(exp((e-mu)/self.temperature)+1))
         nmatrix=len(self.generators['h'].table)
-        nspin=self.lattice.points.values()[0].nspin
+        nspin=self.lattice.points.values()[0].struct.nspin
         buff=zeros((nmatrix,nmatrix),dtype=complex128)
         for matrix in self.matrices(kspace):
             eigs,eigvecs=eigh(matrix)
@@ -83,7 +83,7 @@ class SCMF(TBA):
         etime=time.time()
         print 'Iterate: time consumed ',etime-stime,'s.'
 
-    def iterate(self,kspace=None,error=10**-4,n=200):
+    def iterate(self,kspace=None,error=10**-6,n=200):
         stime=time.time()
         def gx(values):
             for op,value in zip(self.ops.values(),values):
@@ -95,15 +95,3 @@ class SCMF(TBA):
         print 'Order parameters:',buff
         etime=time.time()
         print 'Iterate: time consumed ',etime-stime,'s.'
-
-
-
-
-
-
-
-
-
-
-
-

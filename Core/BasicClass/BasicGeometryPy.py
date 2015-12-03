@@ -78,6 +78,10 @@ class Point:
     '''
     Structured point.
     Attributes:
+        site: integer 
+            The site index, start with 0.
+        scope: string, default value 'None'
+            The scope of the point.
         rcoord: 1D ndarray
             The coordinate in real space.
         icoord: 1D ndarray
@@ -86,10 +90,14 @@ class Point:
             The inner structure of the point.
     '''
 
-    def __init__(self,rcoord,icoord=None,struct=None):
+    def __init__(self,site,scope=None,rcoord=None,icoord=None,struct=None):
         '''
         Constructor.
         Parameters:
+            site: integer 
+                The site index, start with 0.
+            scope: string, default value 'None'
+                The scope of the point.
             rcoord: 1D array-like
                 The coordinate in real space.
             icoord: 1D array-like,optional
@@ -97,7 +105,9 @@ class Point:
             struct: Struct
                 The inner structure of the point.
         '''
-        self.rcoord=array(rcoord)
+        self.site=site
+        self.scope=str(scope)
+        self.rcoord=array([]) if rcoord is None else array(rcoord)
         self.icoord=array([]) if icoord is None else array(icoord)
         self.struct=struct
 
@@ -105,7 +115,7 @@ class Point:
         '''
         Convert an instance to string.
         '''
-        return str(self.struct)+'\n'+'Rcoord: '+str(self.rcoord)+'\n'+'Icoord: '+str(self.icoord)+'\n'
+        return 'Scope,site: '+self.scope+', '+str(self.site)+'\n'+str(self.struct)+'\n'+'Rcoord: '+str(self.rcoord)+'\n'+'Icoord: '+str(self.icoord)+'\n'
 
     def __eq__(self,other):
         '''
@@ -126,6 +136,11 @@ class Point:
         '''
         return self.struct.scope+str(self.struct.site)
 
+    def table(self,nambu=False,priority=None):
+        '''
+        '''
+        return self.struct.table(site=self.site,scope=self.scope,nambu=nambu,priority=priority)
+
 def translation(points,vector):
     '''
     This function returns the translated points.
@@ -140,7 +155,7 @@ def translation(points,vector):
     '''
     result=[]
     for p in points:
-        result.append(Point(rcoord=p.rcoord+vector,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct)))
+        result.append(Point(site=p.site,scope=p.scope,rcoord=p.rcoord+vector,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct)))
     return result
 
 def rotation(points=None,coords=None,angle=0,axis=None,center=None):
@@ -173,7 +188,7 @@ def rotation(points=None,coords=None,angle=0,axis=None,center=None):
     m=array([[m11,m12],[m21,m22]])
     if points is not None:
         for p in points:
-            result.append(Point(rcoord=dot(m,p.rcoord-center)+center,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct)))
+            result.append(Point(site=p.site,scope=p.scope,rcoord=dot(m,p.rcoord-center)+center,icoord=deepcopy(p.icoord),struct=deepcopy(p.struct)))
     if coords is not None:
         for coord in coords:
             result.append(dot(m,coord-center)+center)

@@ -5,7 +5,7 @@ def test_onr():
     U=0.0
     t=-1.0
     m=2;n=2
-    p1=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=1,nspin=2,nnambu=1,scope='WG'+str(m)+str(n))
+    p1=Point(scope='WG'+str(m)+str(n),site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],struct=Fermi(atom=0,norbital=1,nspin=2,nnambu=1))
     a1=array([1.0,0.0])
     a2=array([0.0,1.0])
     a=ONR(
@@ -21,7 +21,7 @@ def test_onr():
                         Hubbard('U',U,modulate=lambda **karg:karg['U'])
                         ]
         )
-    #a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
-    #a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,eta=0.05,save_data=False,run=ONRDOS,show=True))
-    a.addapps('EB',EB(path=BaseSpace({'tag':'U','mesh':linspace(0.0,5.0,100)}),ns=6,save_data=False,run=ONREB))
+    a.addapps('GFC',GFC(nstep=200,save_data=False,vtype='RD',run=ONRGFC))
+    a.addapps('DOS',DOS(emin=-5,emax=5,ne=401,eta=0.05,save_data=False,run=ONRDOS,show=True))
+    #a.addapps('EB',EB(path=BaseSpace({'tag':'U','mesh':linspace(0.0,5.0,100)}),ns=6,save_data=False,run=ONREB))
     a.runapps()

@@ -61,54 +61,54 @@ class Hubbard(Term):
         '''
         This method returns the mesh of Hubbard terms.
         '''
-        ndim=bond.epoint.norbital*bond.epoint.nspin
+        ndim=bond.epoint.struct.norbital*bond.epoint.struct.nspin
         result=zeros((ndim,ndim,ndim,ndim),dtype=dtype)
         if hasattr(self,'atom'):
             atom=self.atom
         else:
-            atom=bond.epoint.atom
-        if atom==bond.epoint.atom:
+            atom=bond.epoint.struct.atom
+        if atom==bond.epoint.struct.atom:
             try:
                 nv=len(self.value)
             except TypeError:
                 nv=1
             if nv>=1:
-                for h in xrange(bond.epoint.norbital):
-                    i=bond.epoint.seq_state(h,1,ANNIHILATION)
-                    j=bond.epoint.seq_state(h,0,ANNIHILATION)
+                for h in xrange(bond.epoint.struct.norbital):
+                    i=bond.epoint.struct.seq_state(h,1,ANNIHILATION)
+                    j=bond.epoint.struct.seq_state(h,0,ANNIHILATION)
                     k=j
                     l=i
                     result[i,j,k,l]=self.value/2 if nv==1 else self.value[0]/2
             if nv==3:
-                for h in xrange(bond.epoint.norbital):
-                    for g in xrange(bond.epoint.norbital):
+                for h in xrange(bond.epoint.struct.norbital):
+                    for g in xrange(bond.epoint.struct.norbital):
                       if g!=h:
-                        i=bond.epoint.seq_state(g,1,ANNIHILATION)
-                        j=bond.epoint.seq_state(h,0,ANNIHILATION)
+                        i=bond.epoint.struct.seq_state(g,1,ANNIHILATION)
+                        j=bond.epoint.struct.seq_state(h,0,ANNIHILATION)
                         k=j
                         l=i
                         result[i,j,k,l]=self.value[1]/2
-                for h in xrange(bond.epoint.norbital):
+                for h in xrange(bond.epoint.struct.norbital):
                     for g in xrange(h):
                         for f in xrange(2):
-                            i=bond.epoint.seq_state(g,f,ANNIHILATION)
-                            j=bond.epoint.seq_state(h,f,ANNIHILATION)
+                            i=bond.epoint.struct.seq_state(g,f,ANNIHILATION)
+                            j=bond.epoint.struct.seq_state(h,f,ANNIHILATION)
                             k=j
                             l=i
                             result[i,j,k,l]=(self.value[1]-self.value[2])/2
-                for h in xrange(bond.epoint.norbital):
+                for h in xrange(bond.epoint.struct.norbital):
                     for g in xrange(h):
-                        i=bond.epoint.seq_state(g,1,ANNIHILATION)
-                        j=bond.epoint.seq_state(h,0,ANNIHILATION)
-                        k=bond.epoint.seq_state(g,0,ANNIHILATION)
-                        l=bond.epoint.seq_state(h,1,ANNIHILATION)
+                        i=bond.epoint.struct.seq_state(g,1,ANNIHILATION)
+                        j=bond.epoint.struct.seq_state(h,0,ANNIHILATION)
+                        k=bond.epoint.struct.seq_state(g,0,ANNIHILATION)
+                        l=bond.epoint.struct.seq_state(h,1,ANNIHILATION)
                         result[i,j,k,l]=self.value[2]
-                for h in xrange(bond.epoint.norbital):
+                for h in xrange(bond.epoint.struct.norbital):
                     for g in xrange(h):
-                        i=bond.epoint.seq_state(g,1,ANNIHILATION)
-                        j=bond.epoint.seq_state(g,0,ANNIHILATION)
-                        k=bond.epoint.seq_state(h,0,ANNIHILATION)
-                        l=bond.epoint.seq_state(h,1,ANNIHILATION)
+                        i=bond.epoint.struct.seq_state(g,1,ANNIHILATION)
+                        j=bond.epoint.struct.seq_state(g,0,ANNIHILATION)
+                        k=bond.epoint.struct.seq_state(h,0,ANNIHILATION)
+                        l=bond.epoint.struct.seq_state(h,1,ANNIHILATION)
                         result[i,j,k,l]=self.value[2]
         return result
 
@@ -164,8 +164,8 @@ class HubbardList(list):
         '''
         This method returns the mesh of all Hubbard terms defined on a bond.
         '''
-        if bond.epoint.nspin==2 and bond.spoint.nspin==2:
-            ndim=bond.epoint.norbital*bond.epoint.nspin
+        if bond.epoint.struct.nspin==2 and bond.spoint.struct.nspin==2:
+            ndim=bond.epoint.struct.norbital*bond.epoint.struct.nspin
             result=zeros((ndim,ndim,ndim,ndim),dtype=dtype)
             if bond.neighbour==0:
                 for obj in self:
@@ -198,9 +198,9 @@ class HubbardList(list):
         buff=self.mesh(bond,dtype=dtype)
         indices=argwhere(abs(buff)>RZERO)
         for (i,j,k,l) in indices:
-            index1=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(i))
-            index2=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(j))
-            index3=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(k))
-            index4=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(l))
+            index1=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.struct.state_index(i))
+            index2=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.struct.state_index(j))
+            index3=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.struct.state_index(k))
+            index4=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.struct.state_index(l))
             result.append(E_Hubbard(buff[i,j,k,l],indices=deepcopy([index1.dagger,index2.dagger,index3,index4]),rcoords=[bond.epoint.rcoord],icoords=[bond.epoint.icoord],seqs=[table[index1],table[index2],table[index3],table[index4]]))
         return result

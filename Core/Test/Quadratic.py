@@ -5,8 +5,8 @@ def test_quadratic():
     test_quadratic_operators()
 
 def test_quadratic_body():
-    p1=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=2,nspin=2,nnambu=2,scope="WG")
-    p2=Point(site=1,rcoord=[1.0,0.0],icoord=[0.0,0.0],atom=1,norbital=2,nspin=2,nnambu=2,scope="WG")
+    p1=Point(site=0,scope="WG",rcoord=[0.0,0.0],icoord=[0.0,0.0],struct=Fermi(atom=0,norbital=2,nspin=2,nnambu=2))
+    p2=Point(site=1,scope="WG",rcoord=[1.0,0.0],icoord=[0.0,0.0],struct=Fermi(atom=1,norbital=2,nspin=2,nnambu=2))
     bond=Bond(neighbour=1,spoint=p1,epoint=p2)
     a=QuadraticList(Hopping('t1',1.0,neighbour=1,indexpackages=sigmaz("SP")),Hopping('t2',1,neighbour=1,indexpackages=sigmax("SL")*sigmax("SP")))
     print a.mesh(bond,False)
@@ -16,8 +16,8 @@ def test_quadratic_body():
     print c.mesh(bond,False)
 
 def test_quadratic_operators():
-    p1=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=1,nspin=2,nnambu=2,scope="WG")
-    p2=Point(site=1,rcoord=[1.0,0.0],icoord=[0.0,0.0],atom=1,norbital=1,nspin=2,nnambu=2,scope="WG")
+    p1=Point(site=0,scope="WG",rcoord=[0.0,0.0],icoord=[0.0,0.0],struct=Fermi(atom=0,norbital=2,nspin=2,nnambu=2))
+    p2=Point(site=1,scope="WG",rcoord=[1.0,0.0],icoord=[0.0,0.0],struct=Fermi(atom=1,norbital=2,nspin=2,nnambu=2))
     l=Lattice(name="WG",points=[p1,p2])
     table=l.table(nambu=True)
     a=QuadraticList(Hopping('t1',1.0,neighbour=1,indexpackages=sigmaz("SP")))

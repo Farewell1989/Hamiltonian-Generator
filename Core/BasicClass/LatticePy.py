@@ -1,10 +1,8 @@
 '''
 Lattice.
 '''
-from IndexPy import *
 from BasicGeometryPy import *
 from BondPy import *
-from TablePy import *
 from numpy.linalg import inv
 import itertools
 import matplotlib.pyplot as plt
@@ -27,10 +25,10 @@ class Lattice(object):
             The bonds of the lattice system.
         priority: string
             The sequence priority of the allowed indices that can be defined on this lattice.
-            Default value 'NSCO', where 'N','S','C','O' stands for 'nambu', 'spin', 'site' and 'orbital' respectively.
+            Default value 'PNSCO', where 'P','N','S','C','O' stands for 'scope', 'nambu', 'spin', 'site' and 'orbital' respectively.
     '''
     
-    def __init__(self,name,points,translations=None,vectors=[],nneighbour=1,priority='NSCO'):
+    def __init__(self,name,points,translations=None,vectors=[],nneighbour=1,priority='PNSCO'):
         '''
         Constructor.
         It can be used in the following ways:
@@ -58,18 +56,19 @@ class Lattice(object):
         '''
         self.name=name
         self.points={}
-        for point in points:
-            self.points[name+str(point.site)]=point if name==point.scope else deepcopy(point)
-            if name!=point.scope:
-                self.points[name+str(point.site)].scope=name
+        for p in points:
+            if name==p.scope:
+                self.points[name+str(p.site)]=p
+            else:
+                self.points[name+str(p.site)]=Point(scope=name,site=p.site,rcoord=p.rcoord,icoord=p.icoord,struct=p.struct)
         if translations is not None:
             for (a,m) in translations:
-                ps=list(self.points.itervalues())
-                inc=max([point.site for point in ps])+1
-                for point in ps[:]:
+                ps=self.points.values()
+                inc=max([p.site for p in ps])+1
+                for p in ps[:]:
                     for i in xrange(1,m):
-                        site=point.site+i*inc
-                        self.points[name+str(site)]=Point(site=site,rcoord=point.rcoord+i*a,icoord=point.icoord,atom=point.atom,norbital=point.norbital,nspin=point.nspin,nnambu=point.nnambu,scope=point.scope)
+                        site=p.site+i*inc
+                        self.points[name+str(site)]=Point(scope=p.scope,site=site,rcoord=p.rcoord+i*a,icoord=p.icoord,struct=p.struct)
         self.vectors=vectors
         self.reciprocals=reciprocals(self.vectors)
         self.nneighbour=nneighbour
@@ -119,16 +118,7 @@ class Lattice(object):
         '''
         Return a Table instance that contains all the allowed indices which can be defined on this lattice.
         '''
-        result=[]
-        for point in self.points.itervalues():
-            for orbital in xrange(point.norbital):
-                for spin in xrange(point.nspin):
-                    if nambu:
-                        for buff in xrange(point.nnambu):
-                            result.append(Index(scope=point.scope,site=point.site,orbital=orbital,spin=spin,nambu=buff))
-                    else:
-                        result.append(Index(scope=point.scope,site=point.site,orbital=orbital,spin=spin,nambu=ANNIHILATION))
-        return Table(sorted(result,key=lambda value: value.to_tuple(indication='p'+self.priority)))
+        return union([p.table(nambu=nambu) for p in self.points.itervalues()],key=lambda value: value.to_tuple(indication=self.priority))
 
 def bonds(points,vectors=None,nneighbour=1):
     '''
@@ -147,7 +137,7 @@ def bonds(points,vectors=None,nneighbour=1):
             Note that the input points will be taken as both the start points and end points of the zero-th neighbour bonds.
     '''
     nvectors=len(vectors)
-    ndim=list(points.itervalues())[0].rcoord.shape[0]
+    ndim=points.values()[0].rcoord.shape[0]
     result=[[]]
     if nvectors==0:
         sup1=0;sup2=0;sup3=0
@@ -178,12 +168,12 @@ def bonds(points,vectors=None,nneighbour=1):
                         result[0].append(Bond(0,points[m],points[n]))
                         break
                     elif abs(cdist-dist)<RZERO:
-                        result[l+1].append(Bond(l+1,points[m],Point(site=points[n].site,rcoord=coord2,icoord=disp,atom=points[n].atom,norbital=points[n].norbital,nspin=points[n].nspin,nnambu=points[n].nnambu,scope=points[n].scope)))
+                        result[l+1].append(Bond(l+1,points[m],Point(scope=points[n].scope,site=points[n].site,rcoord=coord2,icoord=disp,struct=points[n].struct)))
                         break
                     elif cdist<dist:
                         mdists.insert(l,cdist)
                         result.insert(l+1,[])
-                        result[l+1].append(Bond(l+1,points[m],Point(site=points[n].site,rcoord=coord2,icoord=disp,atom=points[n].atom,norbital=points[n].norbital,nspin=points[n].nspin,nnambu=points[n].nnambu,scope=points[n].scope)))
+                        result[l+1].append(Bond(l+1,points[m],Point(scope=points[n].scope,site=points[n].site,rcoord=coord2,icoord=disp,struct=points[n].struct)))
                         break
                 else:
                     if cdist<RZERO:
@@ -191,7 +181,7 @@ def bonds(points,vectors=None,nneighbour=1):
                     elif len(mdists)<nneighbour:
                         mdists.append(cdist)
                         result.append([])
-                        result[len(result)-1].append(Bond(len(result),points[m],Point(site=points[n].site,rcoord=coord2,icoord=disp,atom=points[n].atom,norbital=points[n].norbital,nspin=points[n].nspin,nnambu=points[n].nnambu,scope=points[n].scope)))
+                        result[len(result)-1].append(Bond(len(result),points[m],Point(scope=points[n].scope,site=points[n].site,rcoord=coord2,icoord=disp,struct=points[n].struct)))
                 if len(mdists)>nneighbour:
                     del mdists[nneighbour]
                     del result[nneighbour+1]
@@ -228,7 +218,7 @@ def reciprocals(vectors):
         raise ValueError('Reciprocals error: the number of translation vectors should not be greater than 3.')
     return result
 
-def SuperLattice(name,sublattices,vectors=[],nneighbour=1,priority='NSCO'):
+def SuperLattice(name,sublattices,vectors=[],nneighbour=1,priority='PNSCO'):
     '''
     This function returns the union of sublattices.
     Parameters:

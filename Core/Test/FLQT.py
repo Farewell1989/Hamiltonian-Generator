@@ -6,7 +6,7 @@ def test_flqt():
     mu1=0.0
     mu2=3.0
     name='FLQT'
-    p1=Point(site=0,rcoord=[0.0],icoord=[0.0],norbital=1,nspin=1,nnambu=2,scope=name)
+    p1=Point(scope=name,site=0,rcoord=[0.0],icoord=[0.0],struct=Fermi(norbital=1,nspin=1,nnambu=2))
     a1=array([1.0])
     a=FLQT(
         name=       name,

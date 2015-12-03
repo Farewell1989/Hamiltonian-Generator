@@ -4,7 +4,7 @@ from Hamiltonian.Core.BasicClass.LatticePy import *
 import time
 def test_opt_rep():
     m=2;n=2;nloop=500
-    p=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],atom=0,norbital=1,nspin=2,nnambu=2,scope="WG")
+    p=Point(site=0,scope="WG",rcoord=[0.0,0.0],icoord=[0.0,0.0],struct=Fermi(atom=0,norbital=1,nspin=2,nnambu=2))
     a1=array([1.0,0.0]);a2=array([0.0,1.0])
     l=Lattice(name="WG",points=[p],translations=((a1,m),(a2,n)))
     l.plot(show='y')

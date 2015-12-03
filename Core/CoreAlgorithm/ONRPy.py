@@ -69,7 +69,7 @@ class ONR(Engine):
         self.operators['sp']=OperatorList()
         table=self.lattice.table(nambu=self.nambu) if self.nspin==2 else subset(self.lattice.table(nambu=self.nambu),mask=lambda index: True if index.spin==0 else False)
         for index,sequence in table.iteritems():
-            if isinstance(index,Index):self.operators['sp'].append(E_Linear(1,indices=[index],rcoords=[self.lattice.points[index.scope+str(index.site)].rcoord],icoords=[self.lattice.points[index.scope+str(index.site)].icoord],seqs=[sequence]))
+            self.operators['sp'].append(E_Linear(1,indices=[index],rcoords=[self.lattice.points[index.scope+str(index.site)].rcoord],icoords=[self.lattice.points[index.scope+str(index.site)].icoord],seqs=[sequence]))
         self.operators['sp'].sort(key=lambda operator: operator.seqs[0])
 
     def update(self,**karg):

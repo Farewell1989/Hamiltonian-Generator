@@ -9,7 +9,7 @@ def haldane_hopping(bond):
         result=1
     else:
         result=-1
-    if bond.spoint.atom==1:
+    if bond.spoint.struct.atom==1:
         result=-result
     return result
 
@@ -35,6 +35,6 @@ def test_scmf():
         nambu=      False
         )
     h2.iterate(KSpace(reciprocals=h2.lattice.reciprocals,nk=100),error=10**-5,n=400)
-    #h2.addapps('EB',EB(hexagon_gkm(nk=100),save_data=False,plot=True,show=True,run=TBAEB))
-    #h2.addapps('CN',CN(KSpace(reciprocals=h2.lattice.reciprocals,nk=200),d=10**-6,save_data=False,plot=False,show=True,run=TBACN))
+    h2.addapps('EB',EB(hexagon_gkm(nk=100),save_data=False,plot=True,show=True,run=TBAEB))
+    h2.addapps('CN',CN(KSpace(reciprocals=h2.lattice.reciprocals,nk=200),d=10**-6,save_data=False,plot=False,show=True,run=TBACN))
     h2.runapps()

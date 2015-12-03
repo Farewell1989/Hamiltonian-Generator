@@ -3,9 +3,7 @@ Quadratic terms.
 '''
 from TermPy import *
 from IndexPackagePy import *
-from IndexPy import *
 from BondPy import *
-from TablePy import *
 from OperatorPy import * 
 class Quadratic(Term):
     '''
@@ -96,8 +94,8 @@ class Quadratic(Term):
         '''
         This method returns the mesh of a quadratic term defined on a bond.
         '''
-        n1=bond.epoint.norbital*bond.epoint.nspin*bond.epoint.nnambu
-        n2=bond.spoint.norbital*bond.spoint.nspin*bond.spoint.nnambu
+        n1=bond.epoint.struct.norbital*bond.epoint.struct.nspin*bond.epoint.struct.nnambu
+        n2=bond.spoint.struct.norbital*bond.spoint.struct.nspin*bond.spoint.struct.nnambu
         result=zeros((n1,n2),dtype=dtype)
         if self.neighbour==bond.neighbour:
             value=self.value*(1 if self.amplitude==None else self.amplitude(bond))
@@ -107,39 +105,39 @@ class Quadratic(Term):
                 buff=self.indexpackages
             for obj in buff:
                 pv=value*obj.value
-                eatom=bond.epoint.atom
-                satom=bond.spoint.atom
+                eatom=bond.epoint.struct.atom
+                satom=bond.spoint.struct.atom
                 if hasattr(obj,'atoms'):
                     eatom=obj.atoms[0]
                     satom=obj.atoms[1]
-                if eatom==bond.epoint.atom and satom==bond.spoint.atom:
+                if eatom==bond.epoint.struct.atom and satom==bond.spoint.struct.atom:
                     enambu=CREATION if self.mode=='pr' else ANNIHILATION
                     snambu=ANNIHILATION
                     if hasattr(obj,'spins'):
                         if hasattr(obj,'orbitals'):
-                            i=bond.epoint.seq_state(obj.orbitals[0],obj.spins[0],enambu)
-                            j=bond.spoint.seq_state(obj.orbitals[1],obj.spins[1],snambu)
+                            i=bond.epoint.struct.seq_state(obj.orbitals[0],obj.spins[0],enambu)
+                            j=bond.spoint.struct.seq_state(obj.orbitals[1],obj.spins[1],snambu)
                             result[i,j]+=pv
-                        elif bond.epoint.norbital==bond.spoint.norbital:
-                            for k in xrange(bond.epoint.norbital):
-                                i=bond.epoint.seq_state(k,obj.spins[0],enambu)
-                                j=bond.spoint.seq_state(k,obj.spins[1],snambu)
+                        elif bond.epoint.struct.norbital==bond.spoint.struct.norbital:
+                            for k in xrange(bond.epoint.struct.norbital):
+                                i=bond.epoint.struct.seq_state(k,obj.spins[0],enambu)
+                                j=bond.spoint.struct.seq_state(k,obj.spins[1],snambu)
                                 result[i,j]+=pv
                         else:
                             raise ValueError("Quadratic mesh error: the norbital of epoint and spoint of the input bond should be equal.")
-                    elif bond.epoint.nspin==bond.spoint.nspin:
+                    elif bond.epoint.struct.nspin==bond.spoint.struct.nspin:
                         if hasattr(obj,'orbitals'):
-                            for k in xrange(bond.epoint.nspin):
-                                i=bond.epoint.seq_state(obj.orbitals[0],k,enambu)
-                                j=bond.spoint.seq_state(obj.orbitals[1],k,snambu)
+                            for k in xrange(bond.epoint.struct.nspin):
+                                i=bond.epoint.struct.seq_state(obj.orbitals[0],k,enambu)
+                                j=bond.spoint.struct.seq_state(obj.orbitals[1],k,snambu)
                                 result[i,j]+=pv
                         elif n1==n2:
+                            ns=bond.epoint.struct.norbital*bond.epoint.struct.nspin
                             if self.mode=='pr':
-                                ns=bond.epoint.norbital*bond.epoint.nspin
                                 for k in xrange(ns):
                                     result[k,k+ns]+=pv
                             else:
-                                for k in xrange(bond.epoint.norbital*bond.epoint.nspin):
+                                for k in xrange(ns):
                                     result[k,k]+=pv
                         else:
                             raise ValueError("Quadratic mesh error: the norbital of epoint and spoint of the input bond should be equal.")
@@ -223,9 +221,9 @@ class QuadraticList(list):
         '''
         This method returns the mesh of all quadratic terms defined on a bond.
         '''
-        if bond.epoint.nnambu==bond.spoint.nnambu:
-            n1=bond.epoint.norbital*bond.epoint.nspin*bond.epoint.nnambu
-            n2=bond.spoint.norbital*bond.spoint.nspin*bond.spoint.nnambu
+        if bond.epoint.struct.nnambu==bond.spoint.struct.nnambu:
+            n1=bond.epoint.struct.norbital*bond.epoint.struct.nspin*bond.epoint.struct.nnambu
+            n2=bond.spoint.struct.norbital*bond.spoint.struct.nspin*bond.spoint.struct.nnambu
             result=zeros((n1,n2),dtype=dtype)
             for obj in self:
                 if mask is None or mask(obj):
@@ -263,8 +261,8 @@ def _operators(mesh,bond,table,half=True):
     result=OperatorList()
     indices=argwhere(abs(mesh)>RZERO)
     for (i,j) in indices:
-        eindex=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.state_index(i))
-        sindex=Index(scope=bond.spoint.scope,site=bond.spoint.site,**bond.epoint.state_index(j))
+        eindex=Index(scope=bond.epoint.scope,site=bond.epoint.site,**bond.epoint.struct.state_index(i))
+        sindex=Index(scope=bond.spoint.scope,site=bond.spoint.site,**bond.epoint.struct.state_index(j))
         if eindex in table and sindex in table:
             result.append(E_Quadratic(mesh[i,j],indices=deepcopy([eindex.dagger,sindex]),rcoords=[bond.rcoord],icoords=[bond.icoord],seqs=[table[eindex],table[sindex]]))
             if not half and eindex!=sindex:
