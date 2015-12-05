@@ -159,6 +159,20 @@ class VCA(ONR):
             self.cache['pt_mesh']=result
             return result
 
+    def gf_mix(self,omega=None,k=[]):
+        '''
+        Returns the Green's function in the mixed representation.
+        '''
+        ngf,gf=len(self.operators['sp']),self.gf(omega)
+        return dot(gf,inv(identity(ngf,dtype=complex128)-dot(self.pt(k),gf)))
+
+    def gf_mix_kmesh(self,omega,kmesh):
+        '''
+        Returns the mesh of the Green's functions in the mixed representation.
+        '''
+        ngf,gf=len(self.operators['sp']),self.gf(omega)
+        return einsum('jk,ikl->ijl',gf,inv(identity(ngf,dtype=complex128)-dot(self.pt_mesh(kmesh),gf)))
+
     def gf_vca(self,omega=None,k=[]):
         '''
         Returns the single particle Green's function of the system.
@@ -170,8 +184,7 @@ class VCA(ONR):
         '''
         Returns the mesh of the single particle Green's functions of the system.
         '''
-        ngf,ngf_vca=len(self.operators['sp']),len(self.operators['csp'])
-        gf=self.gf(omega)
+        ngf,ngf_vca,gf=len(self.operators['sp']),len(self.operators['csp']),self.gf(omega)
         buff=einsum('jk,ikl->ijl',gf,inv(identity(ngf,dtype=complex128)-dot(self.pt_mesh(kmesh),gf)))
         result=zeros((kmesh.shape[0],ngf_vca,ngf_vca),dtype=complex128)
         for n,k in enumerate(kmesh):
@@ -363,3 +376,21 @@ def VCATEB(engine,app):
         else:
             plt.savefig(engine.dout+'/'+engine.name.full+'_TEB.png')
         plt.close()
+
+def VCAOP(engine,app):
+    engine.cache.pop('pt_mesh',None)
+    nmatrix=len(engine.operators['sp'])
+    app.ms=zeros((len(app.terms),nmatrix,nmatrix),dtype=complex128)
+    app.ops=zeros(len(app.terms))
+    for i,term in enumerate(app.terms):
+        buff=deepcopy(term);buff.value=1
+        m=zeros((nmatrix,nmatrix),dtype=complex128)
+        for opt in Generator(bonds=engine.lattice.bonds,table=engine.lattice.table(engine.nambu),terms=[buff],nambu=engine.nambu,half=True).operators:
+            m[opt.seqs]+=opt.value
+        m+=conjugate(m.T)
+        app.ms[i,:,:]=m
+    fx=lambda omega,m: (sum(trace(dot(engine.gf_mix_kmesh(omega=engine.mu+1j*omega,kmesh=app.BZ.mesh['k']),m),axis1=1,axis2=2)-trace(m)/(engine.mu+1j*omega-app.p))).real
+    for i,m in enumerate(app.ms):
+        app.ops[i]=-quad(fx,0,float(inf),args=(m))[0]/app.BZ.rank['k']/nmatrix*2/pi
+    for term,op in zip(app.terms,app.ops):
+        print term.tag+':',op

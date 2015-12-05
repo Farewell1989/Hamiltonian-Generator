@@ -49,7 +49,7 @@ class OP(App):
     '''
     Order parameter.
     '''
-    def __init__(self,term,BZ=None,**karg):
+    def __init__(self,terms,BZ=None,p=1.0,**karg):
         '''
         Constructor.
         Parameters:
@@ -58,9 +58,11 @@ class OP(App):
             BZ: BaseSpace, optional
                 The Brillouin zone.
         '''
-        self.term=term
+        self.terms=terms
         self.BZ=BZ
-        self.op=0
+        self.ms=0
+        self.ops=0
+        self.p=p
 
     def matrix(self,bonds,table,nambu):
         '''
