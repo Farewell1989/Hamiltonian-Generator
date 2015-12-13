@@ -126,7 +126,8 @@ def ONRGFC(engine,app):
             return
     app.coeff=zeros((nopt,nopt,2,3,app.nstep),dtype=complex128)
     engine.set_matrix()
-    app.gse,gs=Lanczos(engine.matrix,vtype=app.vtype).eig(job='v')
+    app.gse,gs=eigsh(engine.matrix,k=1,which='SA',return_eigenvectors=True)
+    #app.gse,gs=Lanczos(engine.matrix,vtype=app.vtype).eig(job='v')
     print 'gse:',app.gse
     if engine.basis.basis_type.lower() in ('es','ep'): engine.matrix=None
     for h in xrange(2):
