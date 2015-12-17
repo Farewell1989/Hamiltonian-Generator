@@ -8,33 +8,82 @@ from scipy.integrate import quad
 from scipy.optimize import newton,brenth,brentq,broyden1,broyden2
 class VCA(ONR):
     '''
-    The class VCA implements the algorithm of the variational cluster approximation of an electron system. Apart from those inherited from the class Engine, it has the following attributes:
-    1) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
-    2) filling: the filling factor of the system;
-    3) mu: the chemical potential of the system;
-    4) basis: the occupation number basis of the system;
-    5) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no;
-    6) cell : the unit cell of the system;
-    7) lattice: the cluster of the system;
-    8) terms: the terms of the system;
-    9) weiss: the Weiss terms added to the system;
-    10) nambu: a flag to tag whether pairing terms are involved;
-    11) generators: a dict containing the needed operator generators, which generally has three entries:
-        (1) entry 'h' is the generator for the cluster Hamiltonian including weiss terms;
-        (2) entry 'pt_h' is the generator for the perturbation terms coming from the original Hamiltonian;
-        (3) entry 'pt_w' is the generator for the perturbation terms coming from the weiss ones;
-    12) operators: a dict containing different groups of operators for diverse tasks, which generally has four entries:
-        (1) entry 'h' includes "half" the operators of the Hamiltonian intra the cluster,
-        (2) entry 'pt' includes "half" the operators of the perturbation terms inter the clusters,
-        (3) entry 'sp' includes all the single-particle operators intra the cluster, and
-        (4) entry 'csp' includes all the single-particle operators intra the unit cell;
-    13) clmap: a dict containing the information needed to restore the translation symmetry broken by the choosing of the clusters, which has two entries:
-        (1) 'seqs': a two dimensinal array whose element[i,j] represents the index sequence of the j-th single-particle operator within the cluster which should correspond to the i-th single-particle operator within the unit cell after the restoration of the translation symmetry;
-        (2) 'coords': a three dimensinal array whose element[i,j,:] represents the rcoords of the j-th single-particle operator within the cluster which should correspond to the i-th single-particle operator within the unit cell after the restoration of the translation symmetry;
-    14) matrix: the sparse matrix representation of the system;
-    15) cache: the cache during the process of calculation.
+    This class implements the algorithm of the variational cluster approach of an electron system.
+    Attributes:
+        ensemble: string
+            The ensemble the system uses, 'c' for canonical ensemble and 'g' for grand canonical ensemble.
+        filling: float
+            The filling factor.
+        mu: float
+            The chemical potential.
+            It makes sense only when ensemble is 'c'.
+            It must be zero for grand canonical ensemble since the chemical potential has already been included in the Hamiltonian in this case.
+        basis: BasisE
+            The occupation number basis of the system.
+            When ensemble is 'c', basis.basis_type must be 'ES' or 'EP' and when ensemble is 'g', basis.basis_type must be 'EG'.
+        nspin: integer
+            It makes sense only when basis.basis_type is 'ES'.
+            It should be 1 or 2.
+            When it is set to be 1, only spin-down parts of the Green's function is computed and when it is set to be 2, both spin-up and spin-down parts of the Green's function is computed.
+        cell: Lattice
+            The unit cell of the system.
+        lattice: Lattice
+            The cluster the system uses.
+        terms: list of Term
+            The terms of the system.
+            The weiss terms are not included in this list.
+        weiss: list of Term
+            The Weiss terms of the system.
+        nambu: logical
+            A flag to tag whether the anomalous Green's function are computed.
+        generators: dict of Generator
+            It has three entries:
+            1) 'h': Generator
+                The generator for the cluster Hamiltonian including Weiss terms.
+            2) 'pt_h': Generator
+                The generator for the perturbation coming from the inter-cluster single-particle terms.
+            3) 'pt_w': Generator
+                The generator for the perturbation cominig from the Weiss terms.
+        operators: dict of OperatorList
+            It has four entries:
+            1) 'h': OperatorList
+                The 'half' of the operators for the cluster Hamiltonian,including Weiss terms.
+            2) 'pt': OperatorList
+                The 'half' of the operators for the perturbation, including Weiss terms.
+            3) 'sp': OperatorList
+                The single-particle operators in the cluster.
+                When nspin is 1 and basis.basis_type is 'es', only spin-down single particle operators are included.
+            4) 'csp': OperatorList
+                The single-particle operators in the unit cell.
+                When nspin is 1 and basis.basis_type is 'es', only spin-down single particle operators are included.
+        clmap: dict
+            This dict is used to restore the translation symmetry broken by the explicit tilling of the original lattice.
+            It has two entries:
+            1) 'seqs': 2D ndarray of integers
+                clmap['seq'][i,j] stores the index sequence with respect to operators['sp'] of the j-th cluster-single-particle operator that corresponds to unit-cell-single-particle operator whose index sequence with respsect to operators['csp'] is i after the periodization;
+            2) 'coords': 3D ndarray of floats
+                clmap['seq'][i,j] stores the rcoords of the j-th cluster-single-particle operator that corresponds to unit-cell-single-particle operator whose index sequence with respsect to operator['csp'] is i after the periodization;
+        matrix: csr_matrix
+            The sparse matrix representation of the cluster Hamiltonian.
+        cache: dict
+            The cache during the process of calculation, usually to store some meshes.
+    Supported methods include:
+        1) VCAEB: calculates the energy bands.
+        2) VCADOS: calculates the density of states.
+        3) VCACP: calculates the chemical potential, behaves bad.
+        4) VCAFF: calculates the filling factor.
+        4) VCACN: calculates the Chern number and Berry curvature.
+        5) VCAGP: calculates the grand potential.
+        6) VCAGPS: calculates the grand potential surface.
+        7) VCATEB: calculates the topological Hamiltonian's spectrum.
+        8) VCAOP: calculates the order parameter.
+        9) VCAFS: calculates the Fermi surface.
     '''
+
     def __init__(self,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,cell=None,lattice=None,terms=None,weiss=None,nambu=False,**karg):
+        '''
+        Constructor.
+        '''
         self.ensemble=ensemble
         self.filling=filling
         self.mu=mu
@@ -81,12 +130,7 @@ class VCA(ONR):
 
     def set_operators(self):
         '''
-        Prepare the operators needed in future calculations.
-        Generally, there are four entries in the dict "self.operators":
-        1) 'h': stands for 'Hamiltonian', which contains half of the intra-cluster operators of the Hamiltonian;
-        2) 'pt': stands for 'perturbation', which contains half of the inter-cluster operators as the perturbation terms;
-        3) 'sp': stands for 'single particle', which contains all the allowed or needed single particle operators within the cluster. When self.nspin==1 and self.basis.basis_type=='es' (spin-conserved systems), only spin-down single particle operators are included;
-        4) 'csp': stands for 'cell single particle', which contains all the allowed or needed single particle operators within the unit cell. When self.nspin==1 and self.basis.basis_type=='es' (spin-conserved systems), only spin-down single particle operators are included.
+        Prepare self.operators.
         '''
         self.set_operators_hamiltonian()
         self.set_operators_perturbation()
@@ -120,7 +164,7 @@ class VCA(ONR):
 
     def set_clmap(self):
         '''
-        self.clmap is a dict which contains the necessary information to restore the translation symmetry broken by the different treating of inter and intra cluster quadratics.
+        Prepare self.clmap.
         '''
         nsp,ncsp,ndim=len(self.operators['sp']),len(self.operators['csp']),len(self.operators['csp'][0].rcoords[0])
         buff=[]
@@ -138,7 +182,7 @@ class VCA(ONR):
 
     def pt(self,k):
         '''
-        Returns the matrix form of the perturbation terms.
+        Returns the matrix form of the perturbation.
         '''
         ngf=len(self.operators['sp'])
         result=zeros((ngf,ngf),dtype=complex128)
@@ -148,7 +192,7 @@ class VCA(ONR):
 
     def pt_mesh(self,kmesh):
         '''
-        Returns the mesh of the perturbation terms.
+        Returns the mesh of the perturbation.
         '''
         if 'pt_mesh' in self.cache:
             return self.cache['pt_mesh']
@@ -258,27 +302,9 @@ def VCACP(engine,app):
     nk,nmatrix=app.BZ.rank['k'],len(engine.operators['csp'])
     fx=lambda omega,mu: (sum(trace(engine.gf_mix_kmesh(omega=mu+1j*omega,kmesh=app.BZ.mesh['k']),axis1=1,axis2=2)-nmatrix/(mu+1j*omega-app.p))).real
     gx=lambda mu: -quad(fx,0,float(inf),args=(mu))[0]/nk/nmatrix/pi-engine.filling
-
     app.mu=broyden2(gx,engine.mu,verbose=True,reduction_method='svd',maxiter=20,x_tol=app.error)
-
-    #app.mu=brenth(gx,app.a,app.b,xtol=app.error)
     engine.mu=app.mu
     print 'mu,error:',engine.mu,gx(engine.mu)
-
-#def VCACP(engine,app):
-#    engine.cache.pop('pt_mesh',None)
-#    nelectron=app.BZ.rank['k']*len(engine.operators['csp'])*engine.filling
-#    fx=lambda omega: -sum(imag((trace(engine.gf_vca_kmesh(omega+app.eta*1j,app.BZ.mesh['k']),axis1=1,axis2=2))))/pi
-#    for i,(a,b,deg) in enumerate(app.e_degs):
-#        buff=0
-#        if i<2:
-#            buff+=integration(fx,a,b,deg=deg)
-#        else:
-#            Fx=lambda omega: integration(fx,a,omega,deg=deg)+buff-nelectron
-#    #app.mu=newton(Fx,engine.mu,fprime=fx,tol=app.error)
-#    app.mu=brenth(Fx,app.a,app.b,xtol=app.error)
-#    engine.mu=app.mu
-#    print 'mu,error:',engine.mu,Fx(engine.mu)
 
 def VCAFS(engine,app):
     engine.cache.pop('pt_mesh',None)

@@ -13,25 +13,56 @@ import matplotlib.pyplot as plt
 import os.path,sys
 class ONR(Engine):
     '''
-    The class ONR provides the methods to get the sparse matrix representation on the occupation number basis of an electron system. Apart from those inherited from its parent class Engine, it has the following attributes:
-    1) ensemble: 'c' for canonical ensemble and 'g' for grand canonical ensemble;
-    2) filling: the filling factor of the system;
-    3) mu: the chemical potential of the system;
-    4) basis: the occupation number basis of the system;
-    5) nspin: a flag to tag whether the ground state of the system lives in the subspace where the spin up electrons equal the spin down electrons, 1 for yes and 2 for no; 
-    6) lattice: the lattice of the system;
-    7) terms: the terms of the system;
-    8) nambu: a flag to tag whether pairing terms are involved;
-    9) generators: a dict containing the needed operator generators, which generally has only one entry:
-        (1) entry 'h' is the generator for the whole Hamiltonian;
-    10) operators: a dict containing different groups of operators for diverse tasks, which generally has two entries:
-        (1) entry 'h' includes "half" the operators of the Hamiltonian, and
-        (2) entry 'sp' includes all the single-particle operators;
-    11) matrix: the sparse matrix representation of the system;
-    12) cache: the cache during the process of calculation.
+    This provides the methods to get the sparse matrix representation on the occupation number basis of an electron system. 
+    Attributes:
+        ensemble: string
+            The ensemble the system uses, 'c' for canonical ensemble and 'g' for grand canonical ensemble.
+        filling: float
+            The filling factor.
+        mu: float
+            The chemical potential.
+            It makes sense only when ensemble is 'c'.
+            It must be zero for grand canonical ensemble since the chemical potential has already been included in the Hamiltonian in this case.
+        basis: BasisE
+            The occupation number basis of the system.
+            When ensemble is 'c', basis.basis_type must be 'ES' or 'EP' and when ensemble is 'g', basis.basis_type must be 'EG'.
+        nspin: integer
+            It makes sense only when basis.basis_type is 'ES'.
+            It should be 1 or 2.
+            When it is set to be 1, only spin-down parts of the Green's function is computed and when it is set to be 2, both spin-up and spin-down parts of the Green's function is computed.
+        lattice: Lattice
+            The lattice the system uses.
+        terms: list of Term
+            The terms of the system.
+            The weiss terms are not included in this list.
+        nambu: logical
+            A flag to tag whether the anomalous Green's function are computed.
+        generators: dict of Generator
+            It has only one entries:
+            1) 'h': Generator
+                The generator for the Hamiltonian including Weiss terms.
+        operators: dict of OperatorList
+            It has two entries:
+            1) 'h': OperatorList
+                The 'half' of the operators for the Hamiltonian,including Weiss terms.
+            3) 'sp': OperatorList
+                The single-particle operators in the lattice.
+                When nspin is 1 and basis.basis_type is 'es', only spin-down single particle operators are included.
+        matrix: csr_matrix
+            The sparse matrix representation of the cluster Hamiltonian.
+        cache: dict
+            The cache during the process of calculation.
+    Supported methods include:
+        1) ONREB: calculates the energy spectrum.
+        2) ONRDOS: calculates the density of states.
+        3) ONRGFC: calculates the coefficients of single-particle Green's function.
+        4) ONRGF: calculates the single-particle Green's function.
     '''
 
     def __init__(self,ensemble='c',filling=0.5,mu=0,basis=None,nspin=1,lattice=None,terms=None,nambu=False,**karg):
+        '''
+        Constructor.
+        '''
         self.ensemble=ensemble
         self.filling=filling
         self.mu=mu
@@ -54,10 +85,7 @@ class ONR(Engine):
 
     def set_operators(self):
         '''
-        Prepare the operators that will be needed in future calculations.
-        Generally, there are two entries in the dict "self.operators":
-        1) 'h': stands for 'Hamiltonian', which contains half of the operators of the Hamiltonian;
-        2) 'sp': stands for 'single particle', which contains all the allowed or needed single particle operators. When self.nspin==1 and self.basis.basis_type=='es' (spin-conserved systems), only spin-down single particle operators are included.
+        Prepare self.operators.
         '''
         self.set_operators_hamiltonian()
         self.set_operators_single_particle()
@@ -126,8 +154,10 @@ def ONRGFC(engine,app):
             return
     app.coeff=zeros((nopt,nopt,2,3,app.nstep),dtype=complex128)
     engine.set_matrix()
-    app.gse,gs=eigsh(engine.matrix,k=1,which='SA',return_eigenvectors=True)
-    #app.gse,gs=Lanczos(engine.matrix,vtype=app.vtype).eig(job='v')
+    if app.methond in ('user',)
+        app.gse,gs=Lanczos(engine.matrix,vtype=app.vtype,zero=app.error).eig(job='v',precision=app.error)    
+    else:
+        app.gse,gs=eigsh(engine.matrix,k=1,which='SA',return_eigenvectors=True,tol=app.error)
     print 'gse:',app.gse
     if engine.basis.basis_type.lower() in ('es','ep'): engine.matrix=None
     for h in xrange(2):
