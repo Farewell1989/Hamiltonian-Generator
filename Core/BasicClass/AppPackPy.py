@@ -69,12 +69,22 @@ class OP(App):
         '''
         pass
 
+class FF(App):
+    '''
+    Filling factor.
+    '''
+    def __init__(self,BZ,p=1.0,**karg):
+        self.BZ=BZ
+        self.p=p
+        self.filling=0
+
 class CP(App):
     '''
     Chemical potential.
     '''
-    def __init__(self,BZ=None,eta=0.05,error=10**-6,a=-20,b=20,cut=-10,deg1=200,deg2=200,deg3=200,n1=10**2,n2=10**5,**karg):
+    def __init__(self,BZ=None,eta=0.05,error=10**-6,a=-20,b=20,p=1.0,cut=-10,deg1=200,deg2=200,deg3=200,n1=10**2,n2=10**5,**karg):
         self.BZ=BZ
+        self.p=p
         self.eta=eta
         self.error=10**-6
         self.a=a

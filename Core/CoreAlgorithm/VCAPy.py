@@ -5,7 +5,7 @@ from Hamiltonian.Core.BasicAlgorithm.BerryCurvaturePy import *
 from numpy.linalg import det,inv
 from scipy import interpolate
 from scipy.integrate import quad
-from scipy.optimize import newton,brenth,brentq
+from scipy.optimize import newton,brenth,brentq,broyden1,broyden2
 class VCA(ONR):
     '''
     The class VCA implements the algorithm of the variational cluster approximation of an electron system. Apart from those inherited from the class Engine, it has the following attributes:
@@ -245,20 +245,40 @@ def VCAEB(engine,app):
             plt.savefig(engine.dout+'/'+engine.name.full+'_EB.png')
         plt.close()
 
+def VCAFF(engine,app):
+    engine.cache.pop('pt_mesh',None)
+    nk,nmatrix=app.BZ.rank['k'],len(engine.operators['csp'])
+    fx=lambda omega: (sum(trace(engine.gf_mix_kmesh(omega=engine.mu+1j*omega,kmesh=app.BZ.mesh['k']),axis1=1,axis2=2)-nmatrix/(engine.mu+1j*omega-app.p))).real
+    app.filling=-quad(fx,0,float(inf))[0]/nk/nmatrix/pi
+    engine.filling=app.filling
+    print 'Filling factor:',app.filling
+
 def VCACP(engine,app):
     engine.cache.pop('pt_mesh',None)
-    nelectron=app.BZ.rank['k']*len(engine.operators['csp'])*engine.filling
-    fx=lambda omega: -sum(imag((trace(engine.gf_vca_kmesh(omega+app.eta*1j,app.BZ.mesh['k']),axis1=1,axis2=2))))/pi
-    for i,(a,b,deg) in enumerate(app.e_degs):
-        buff=0
-        if i<2:
-            buff+=integration(fx,a,b,deg=deg)
-        else:
-            Fx=lambda omega: integration(fx,a,omega,deg=deg)+buff-nelectron
-    #app.mu=newton(Fx,engine.mu,fprime=fx,tol=app.error)
-    app.mu=brenth(Fx,app.a,app.b,xtol=app.error)
+    nk,nmatrix=app.BZ.rank['k'],len(engine.operators['csp'])
+    fx=lambda omega,mu: (sum(trace(engine.gf_mix_kmesh(omega=mu+1j*omega,kmesh=app.BZ.mesh['k']),axis1=1,axis2=2)-nmatrix/(mu+1j*omega-app.p))).real
+    gx=lambda mu: -quad(fx,0,float(inf),args=(mu))[0]/nk/nmatrix/pi-engine.filling
+
+    app.mu=broyden2(gx,engine.mu,verbose=True,reduction_method='svd',maxiter=20,x_tol=app.error)
+
+    #app.mu=brenth(gx,app.a,app.b,xtol=app.error)
     engine.mu=app.mu
-    print 'mu,error:',engine.mu,Fx(engine.mu)
+    print 'mu,error:',engine.mu,gx(engine.mu)
+
+#def VCACP(engine,app):
+#    engine.cache.pop('pt_mesh',None)
+#    nelectron=app.BZ.rank['k']*len(engine.operators['csp'])*engine.filling
+#    fx=lambda omega: -sum(imag((trace(engine.gf_vca_kmesh(omega+app.eta*1j,app.BZ.mesh['k']),axis1=1,axis2=2))))/pi
+#    for i,(a,b,deg) in enumerate(app.e_degs):
+#        buff=0
+#        if i<2:
+#            buff+=integration(fx,a,b,deg=deg)
+#        else:
+#            Fx=lambda omega: integration(fx,a,omega,deg=deg)+buff-nelectron
+#    #app.mu=newton(Fx,engine.mu,fprime=fx,tol=app.error)
+#    app.mu=brenth(Fx,app.a,app.b,xtol=app.error)
+#    engine.mu=app.mu
+#    print 'mu,error:',engine.mu,Fx(engine.mu)
 
 def VCAFS(engine,app):
     engine.cache.pop('pt_mesh',None)
