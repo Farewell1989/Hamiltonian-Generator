@@ -134,7 +134,7 @@ class Point:
         '''
         This method returns a string as the tag of a structured point.
         '''
-        return self.struct.scope+str(self.struct.site)
+        return self.scope+str(self.site)
 
     def table(self,nambu=False,priority=None):
         '''

@@ -154,7 +154,7 @@ def ONRGFC(engine,app):
             return
     app.coeff=zeros((nopt,nopt,2,3,app.nstep),dtype=complex128)
     engine.set_matrix()
-    if app.methond in ('user',)
+    if app.method in ('user',):
         app.gse,gs=Lanczos(engine.matrix,vtype=app.vtype,zero=app.error).eig(job='v',precision=app.error)    
     else:
         app.gse,gs=eigsh(engine.matrix,k=1,which='SA',return_eigenvectors=True,tol=app.error)
