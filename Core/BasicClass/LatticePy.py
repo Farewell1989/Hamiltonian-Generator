@@ -3,6 +3,7 @@ Lattice.
 '''
 from BasicGeometryPy import *
 from BondPy import *
+from DZYSuperbondPy import *
 from numpy.linalg import inv
 import itertools
 import matplotlib.pyplot as plt

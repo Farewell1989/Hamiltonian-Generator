@@ -1,6 +1,7 @@
 '''
 The inner structure of a point.
 '''
+from numpy import *
 from IndexPy import *
 from TablePy import *
 class Struct(object):
