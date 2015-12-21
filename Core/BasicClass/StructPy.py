@@ -13,12 +13,21 @@ class Struct(object):
         '''
         for key in karg:
             setattr(self,key,karg[key])
+    
+    def __eq__(self,other):
+        '''
+        Overloaded operator(==).
+        '''
+        return self.__dict__==other.__dict__
 
     def __ne__(self,other):
         '''
         Overloaded operator(!=).
         '''
         return not self==other
+    
+    def dim(self):      
+        return product(self.__dict__.values())
 
 class Fermi(Struct):
     '''

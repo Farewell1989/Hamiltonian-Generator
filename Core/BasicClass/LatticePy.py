@@ -28,7 +28,7 @@ class Lattice(object):
             Default value 'PNSCO', where 'P','N','S','C','O' stands for 'scope', 'nambu', 'spin', 'site' and 'orbital' respectively.
     '''
     
-    def __init__(self,name,points,translations=None,vectors=[],nneighbour=1,priority='PNSCO'):
+    def __init__(self,name,points,translations=None,vectors=[],nneighbour=1,priority='PNSCO',superbond=None):
         '''
         Constructor.
         It can be used in the following ways:
@@ -73,6 +73,11 @@ class Lattice(object):
         self.reciprocals=reciprocals(self.vectors)
         self.nneighbour=nneighbour
         self.bonds=[b for bs in bonds(self.points,self.vectors,self.nneighbour) for b in bs]
+        if superbond is not None:
+            if callable(superbond):
+                self.superbonds=superbond(points,self.vectors)
+            else:
+                self.superbonds=superbonds(bonds(self.points,self.vectors,superbond))
         self.priority=priority
 
     def __str__(self):
@@ -119,6 +124,17 @@ class Lattice(object):
         Return a Table instance that contains all the allowed indices which can be defined on this lattice.
         '''
         return union([p.table(nambu=nambu) for p in self.points.itervalues()],key=lambda value: value.to_tuple(indication=self.priority))
+
+    @property
+    def number(self):
+        return len(self.points.values())
+    
+    @property    
+    def dim(self):
+        result={}
+        for x in self.points.values():
+            result[x.site]=x.struct.dim()
+        return result
 
 def bonds(points,vectors=None,nneighbour=1):
     '''
@@ -188,6 +204,17 @@ def bonds(points,vectors=None,nneighbour=1):
     for nb,bonds in enumerate(result):
         for bond in bonds:
             bond.neighbour=nb
+    return result
+
+def superbonds(bonds):
+    result=Superbondlist()
+    for x,bs in enumerate(bonds):
+        if x==0:     
+            for b in bs:
+                result.append(Superbond(b.neighbour,[b.spoint]))
+        else:
+            for b in bs:
+                result.append(Superbond(b.neighbour,[b.spoint,b.epoint]))
     return result
 
 def reciprocals(vectors):
