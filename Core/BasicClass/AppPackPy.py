@@ -35,7 +35,7 @@ class EB(App):
         self.eta=eta
         self.ns=ns
         self.ts=ts
-
+        
 class DOS(App):
     '''
     Density of states.
