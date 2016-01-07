@@ -291,17 +291,17 @@ def VCAEB(engine,app):
 
 def VCAFF(engine,app):
     engine.cache.pop('pt_mesh',None)
-    nk,nmatrix=app.BZ.rank['k'],len(engine.operators['csp'])
+    nk,nmatrix=app.BZ.rank['k'],len(engine.operators['sp'])
     fx=lambda omega: (sum(trace(engine.gf_mix_kmesh(omega=engine.mu+1j*omega,kmesh=app.BZ.mesh['k']),axis1=1,axis2=2)-nmatrix/(engine.mu+1j*omega-app.p))).real
-    app.filling=-quad(fx,0,float(inf))[0]/nk/nmatrix/pi
+    app.filling=quad(fx,0,float(inf))[0]/nk/nmatrix/pi
     engine.filling=app.filling
     print 'Filling factor:',app.filling
 
 def VCACP(engine,app):
     engine.cache.pop('pt_mesh',None)
-    nk,nmatrix=app.BZ.rank['k'],len(engine.operators['csp'])
+    nk,nmatrix=app.BZ.rank['k'],len(engine.operators['sp'])
     fx=lambda omega,mu: (sum(trace(engine.gf_mix_kmesh(omega=mu+1j*omega,kmesh=app.BZ.mesh['k']),axis1=1,axis2=2)-nmatrix/(mu+1j*omega-app.p))).real
-    gx=lambda mu: -quad(fx,0,float(inf),args=(mu))[0]/nk/nmatrix/pi-engine.filling
+    gx=lambda mu: quad(fx,0,float(inf),args=(mu))[0]/nk/nmatrix/pi-engine.filling
     app.mu=broyden2(gx,engine.mu,verbose=True,reduction_method='svd',maxiter=20,x_tol=app.error)
     engine.mu=app.mu
     print 'mu,error:',engine.mu,gx(engine.mu)
@@ -437,6 +437,6 @@ def VCAOP(engine,app):
         app.ms[i,:,:]=m
     fx=lambda omega,m: (sum(trace(dot(engine.gf_mix_kmesh(omega=engine.mu+1j*omega,kmesh=app.BZ.mesh['k']),m),axis1=1,axis2=2)-trace(m)/(engine.mu+1j*omega-app.p))).real
     for i,m in enumerate(app.ms):
-        app.ops[i]=-quad(fx,0,float(inf),args=(m))[0]/app.BZ.rank['k']/nmatrix*2/pi
+        app.ops[i]=quad(fx,0,float(inf),args=(m))[0]/app.BZ.rank['k']/nmatrix*2/pi
     for term,op in zip(app.terms,app.ops):
         print term.tag+':',op
