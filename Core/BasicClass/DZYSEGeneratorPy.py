@@ -44,7 +44,7 @@ class SEGenerator:
             nambu: logical,optional
             half: logical,optional
         '''
-        self.bonds=terms.bondclassify(bonds)
+        self.bonds=bonds
         self.latticedim=latticedim
         self.parameters={}
         self.terms={}
@@ -75,9 +75,10 @@ class SEGenerator:
                 for bond in self.bonds[tag]:
                     self.cache['const']=self.cache['const']+self.terms['const'][tag].hamiltonian(self.latticedim,bond)
         if 'alter' in self.terms:
+            self.cache['alter']={}
             for tag in self.terms['alter'].iterkeys():
                 self.cache['alter'][tag]=coo_matrix((dim,dim))
-                for bond in self.bonds:
+                for bond in self.bonds[tag]:
                     self.cache['alter'][tag]=self.cache['alter'][tag]+self.terms['alter'][tag].hamiltonian(self.latticedim,bond)
 
 #    def __str__(self):

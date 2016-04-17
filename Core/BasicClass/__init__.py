@@ -20,7 +20,12 @@ from DZYSEGeneratorPy import *
 from DZYSindexPackPy import *
 from DZYSuperexchangePy import *
 from DZYSuperbondPy import *
-
+from DZYOrderPy import *
+from DZYSpinWGeneratorPy import *
+from DZYSpinWmatrixPy import *
+from DZYHoPping import *
+from DZYHuBbard import *
+from Hubbard_SpinWGenerator import *
 '''
 LatticePy
 Lattice.superbond

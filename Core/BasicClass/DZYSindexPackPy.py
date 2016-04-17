@@ -52,7 +52,7 @@ class SindexPack:
             m=zeros((self.dim[x],self.dim[x]))
             m[self.index[x]]=1.0
             result=kron(result,m)
-        return self.value*(result+result.conj().T)
+        return self.value*result
         
 class SindexPackList(list):
     def __init__(self,*arg):

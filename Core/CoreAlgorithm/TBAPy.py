@@ -185,7 +185,3 @@ def TBACN(engine,app):
         else:
             plt.savefig(engine.dout+'/'+engine.name.full+'_BC.png')
         plt.close()
-
-def TBAGF(engine,app):
-    pass
-    

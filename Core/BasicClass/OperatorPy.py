@@ -69,7 +69,7 @@ class Operator:
         result=OperatorList()
         if isinstance(other,Operator):
             if self.is_combinable(other):
-                if abs(self.value+other.value)>RZERO:
+                if any(abs(self.value+other.value)>RZERO):
                     result.append(Opeartor(mode=self.mode,value=self.value+other.value,indices=deepcopy(self.indices),rcoords=self.rcoords,icoords=self.icoords,seqs=self.seqs))
             else:
                 result.append(deepcopy(self))
@@ -78,7 +78,7 @@ class Operator:
             mask=True
             for obj in other:
                 if mask and self.is_combinable(obj):
-                    if abs(self.value+obj.value)>RZERO:
+                    if any(abs(self.value+obj.value)>RZERO):
                         result.append(Operator(mode=self.mode,value=self.value+obj.value,indices=deepcopy(self.indices),rcoords=self.rcoords,icoords=self.icoords,seqs=self.seqs))
                     mask=False
                 else:
@@ -223,3 +223,10 @@ class OperatorList(list):
         Overloaded operator(*), which supports the multiplication of an OperatorList instance with a scalar.
         '''
         return self.__mul__(other)
+
+
+def annihilation(table):
+    out={}
+    for index,seq in table.items():
+        out.update({seq:Operator('anni',1.0,[index],rcoords=[0],icoords=[0],seqs=(seq,))})
+    return out

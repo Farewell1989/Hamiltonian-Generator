@@ -1,7 +1,7 @@
 from Hamiltonian.Core.BasicClass import *
 class TriangleDataBase:
     def __init__(self,scope,norbital=1,nspin=2,nnambu=1):
-        A=Fermi(atom=0,norbital=norbital,nspin=nspin,nnambu=nnambu)
+        A=Struct(atom=0,norbital=1,nspin=2,nnambu=1)
         self.points=[]
         self.vectors=[]
         if scope=='T1':

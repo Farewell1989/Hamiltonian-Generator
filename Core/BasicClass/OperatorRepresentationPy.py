@@ -233,3 +233,13 @@ def opt_rep_4_1100(data,indices,indptr,nbasis,basis_table,seq1,seq2,seq3,seq4):
                         data[ndata]=(-1)**nsign
                         ndata+=1
     indptr[nbasis]=ndata
+
+
+def annihilationRep(c,basis0,basis1):
+    out={}
+    for x,ci in c.iteritems():
+        out.update({x:opt_rep(ci,[basis0,basis1]).toarray().T})
+    return out
+    
+def phivector(phi,basis):
+    return
