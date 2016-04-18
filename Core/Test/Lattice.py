@@ -9,20 +9,16 @@ def test_lattice_body():
     p1=Point(site=0,rcoord=[0.0,0.0],icoord=[0.0,0.0],struct=Fermi(norbital=2,nspin=3,nnambu=2))
     a1=array([1.0,0.0])
     a2=array([0.0,1.0])
-    m=2;n=2
+    m=20;n=20
     stime=time.time()
     a=Lattice('L'+str(m)+str(n),[p1],translations=((a1,m),(a2,n)),vectors=[a1*m,a2*n],nneighbour=2)
     etime=time.time()
-    print etime-stime
-    for p in a.points:
-        print p
-    for bond in a.bonds:
-        print bond
+    print 'Construction time for %s*%s lattice: %s'%(m,n,etime-stime)
     a.plot(show=True)
     stime=time.time()
     b=Lattice('C'+str(m)+str(n),[p1],translations=((a1,m),(a2,n)),nneighbour=2)
     etime=time.time()
-    print etime-stime
+    print 'Construction time for %s*%s cluster: %s'%(m,n,etime-stime)
     b.plot(show=True)
 
 def test_lattice_table():
